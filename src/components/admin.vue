@@ -52,9 +52,7 @@
         <cell :title="'收货人:' +c.address_name" :value="c.address_phone" :inline-desc="'收货地址:' + c.address_detail">
         </cell>
         <div class="weui-form-preview__ft">
-          <!-- <a class="weui-form-preview__btn weui-form-preview__btn_default left">复制链接</a> -->
-          <a @click="right(item)" :class="{'weui-form-preview__btn_primary':c.button_type=='true','weui-form-preview__btn_default':c.button_type=='false'}" class="weui-form-preview__btn ">{{c.button_text}}</a>
-
+          <a @click="right(c)" :class="{'weui-form-preview__btn_primary':c.button_type=='true','weui-form-preview__btn_default':c.button_type=='false'}" class="weui-form-preview__btn ">{{c.button_text}}</a>
         </div>
       </group>
     </flexbox-item>
@@ -320,7 +318,6 @@ export default {
       }
     },
     right(orderlist){
-
       if(orderlist.button_type=='false'){
         return   this.$vux.toast.show({
           text: '无法操作~'
