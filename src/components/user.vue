@@ -6,13 +6,13 @@
     </cell>
   </group>
   <group>
-    <cell title="佣金" :value="user.money_yongjin">
+    <!-- <cell title="佣金" :value="user.money_yongjin">
       <img slot="icon" width="30" style="display:block;margin-right:5px;" src="../svg/yongjin.svg" />
-    </cell>
-    <cell title="本金" :value="user.money_benjin">
+    </cell> -->
+    <!-- <cell title="本金" :value="user.money_benjin">
       <img slot="icon" width="30" style="display:block;margin-right:5px;" src="../svg/本金.svg" />
-    </cell>
-    <cell title="余额" :value="user.money_yue">
+    </cell> -->
+    <cell title="余额" :value="user.money_yue" is-link link="yue">
       <img slot="icon" width="30" style="display:block;margin-right:5px;" src="../svg/余额.svg" />
     </cell>
   </group>
@@ -22,7 +22,7 @@
     </cell>
     <div class="weui-cell">
       <flexbox slot="default" :gutter="0" wrap="wrap">
-       <flexbox-item :span="1/4" v-for="item in user.orderNews" @click.native="topage(item)">
+       <flexbox-item :span="1/4" :key="index" v-for="(item,index) in user.orderNews" @click.native="topage(item)">
          <div class="flex-demo">
          <div class="flex-item">
            <img  width="25" height="25" :src="item.svg"/>
@@ -126,17 +126,15 @@ export default {
   methods: {
     toorder(){
       this.$router.push('order')
-      this.$store.commit('increment')
+
       this.$store.state.vux.tabs = 0
-      this.$store.state.status = '待付款'
+      this.$store.state.vux.status = '待下单'
     },
     topage(item){
       this.$router.push('order')
-      this.$store.commit('increment')
-      console.log(item.index);
       this.$store.state.vux.tabs = item.index
       this.$store.state.vux.status = item.name
-      // this.$root.eventHub.$emit('changeIndex', item)
+      // this.$store.commit('increment',item)
     },
     finish(){
       if(this.newpass!=''&&this.oldpass!=''&&this.iconType=='success'){
@@ -183,8 +181,8 @@ export default {
       iconType: '',
       showmodal: false,
       user: {
-        orderNews:[{index:0,name:'待付款',badge:'99+',svg:'dfk.svg'},{index:1,name:'待发货',badge:'99+',svg:'dfh.svg'},
-        {index:2,name:'待收货',badge:'99+',svg:'dsh.svg'},{index:3,name:'退款/售后',badge:'99+',svg:'tksh.svg'}],
+        orderNews:[{index:2,name:'待付款',badge:'99+',svg:'dfk.svg'},{index:3,name:'待发货',badge:'99+',svg:'dfh.svg'},
+        {index:4,name:'待收货',badge:'99+',svg:'dsh.svg'},{index:5,name:'退款/售后',badge:'99+',svg:'tksh.svg'}],
         "money_yongjin": "",
         "money_benjin": "",
         "money_yue": "",

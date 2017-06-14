@@ -37,20 +37,24 @@ export default {
   },
   methods: {
     submitForm() {
-      console.log(this.ruleForm2);
-      cookie.set('username', this.ruleForm2.account)
       this.$http.post('http://sd.a10store.com/api/login.php', {
         form: this.ruleForm2
       }).then(res => {
-        console.log(res);
-        cookie.set('username', this.ruleForm2.account)
-        cookie.set('pass', this.ruleForm2.account)
-        cookie.set('id', res.body.id)
-        this.$router.push('/caigou')
-      }, res => {})
-    },
-    resetForm(formName) {
-      this.$refs[formName].resetFields();
+        if(res.body.data_info=='success'){
+          cookie.set('username', this.ruleForm2.account)
+          cookie.set('pass', this.ruleForm2.account)
+          cookie.set('id', res.body.id)
+          this.$router.push('/caigou')
+        }else {
+            this.$vux.toast.show({
+            type: 'cancel',
+            position: 'middle',
+            text: '登陆失败!'
+          })
+        }
+      }, res => {
+
+      })
     }
   }
 }

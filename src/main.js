@@ -1,5 +1,3 @@
-// The Vue build version to load with the `import` command
-// (runtime-only or standalone) has been set in webpack.base.conf with an alias.
 import Vue from 'vue'
 import FastClick from 'fastclick'
 import VueRouter from 'vue-router'
@@ -22,7 +20,9 @@ import { cookie } from 'vux'
 Vue.use(ToastPlugin)
 Vue.use(VueResource)
 Vue.use(VueRouter)
-
+import { Loadmore,InfiniteScroll  } from 'mint-ui';
+Vue.use(InfiniteScroll)
+Vue.component(Loadmore.name, Loadmore);
 // 多级滚动
 
 const store = new Vuex.Store({}) // 这里你可能已经有其他 module
@@ -31,16 +31,32 @@ store.registerModule('vux', { // 名字自己定义
   state: {
     isLoading: false,
     tabs:0,
-    status:'待下单'
+    iid:'',
+    status:'待下单',
+    num:'',
+    edit:false,
+    backText:'',
+    topPading:'46px',
+    bottomPading:'53px'
   },
   mutations: {
     updateLoadingStatus (state, payload) {
       console.log(payload);
       state.isLoading = payload.isLoading
     },
-    increment (state) {
-
-     console.log(state);
+    increment (state,item) {
+     console.log(item);
+     state.tabs = item.index
+     state.status = item.name
+   },
+   isNeedpadding(state,nestate){
+     state.bottomPading = '53px'
+   },
+   isnOpadding(state){
+     state.bottomPading = '0px'
+   },
+   changeBacktext(state,from){
+     state.backText = from.name
    }
   }
 })
@@ -48,19 +64,32 @@ const router = new VueRouter({
     routes
 })
 router.beforeEach(({meta, path}, from, next) => {
+console.log(window.location.host);
+  if(meta.hiddentabbar){
+    store.commit('isNeedpadding')
+
+  }
+  if(!meta.hiddentabbar){
+    store.commit('isnOpadding')
+    // store.commit('changeBacktext',from)
+  }
   store.commit('updateLoadingStatus', {isLoading: true})
     let { auth = true } = meta
     let isLogin = Boolean(cookie.get('username'))
-    if (auth && !isLogin && path !== '/login') {
-        return next({ path: '/login' })
+    if(window.location.host=='localhost:8080'){
+      next()
+    }else {
+      if (auth && !isLogin && path !== '/login') {
+          return next({ path: '/login' })
+      }
+      next()
     }
-    next()
+
 })
 router.afterEach(function (to) {
   store.commit('updateLoadingStatus', {isLoading: false})
 })
 FastClick.attach(document.body)
-
 Vue.config.productionTip = false
 
 /* eslint-disable no-new */
@@ -68,7 +97,4 @@ new Vue({
   router,
   store,
   render: h => h(App),
-  data: {
-    eventHub: new Vue()
-  }
 }).$mount('#app-box')
