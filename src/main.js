@@ -23,8 +23,9 @@ Vue.use(VueRouter)
 import { Loadmore,InfiniteScroll  } from 'mint-ui';
 Vue.use(InfiniteScroll)
 Vue.component(Loadmore.name, Loadmore);
+import Icon from 'vue-awesome/components/Icon'
+Vue.component('icon', Icon)
 // 多级滚动
-
 const store = new Vuex.Store({}) // 这里你可能已经有其他 module
 
 store.registerModule('vux', { // 名字自己定义

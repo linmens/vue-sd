@@ -34,8 +34,11 @@
        </cell>
      </group>
      <group>
+       <x-input title="银行卡" :max="24" :disabled="!edit" @on-change="bankchange" v-model="user.bank"></x-input>
+       <x-input title="支付宝"  :disabled="!edit"  v-model="user.alipay"></x-input>
        <x-input title="手机" :disabled="!edit"  text-align="right" placeholder="I'm placeholder" v-model="user.phone"></x-input>
        <x-input  title="QQ" :disabled="!edit" text-align="right" placeholder="I'm placeholder" v-model="user.qq"></x-input>
+        <x-input  title="微信" :disabled="!edit" text-align="right" placeholder="I'm placeholder" v-model="user.wechat"></x-input>
   <x-address title="所在地区"  :disabled="!edit"  v-model="user.address" :list="addressData" placeholder="请选择地址" ></x-address>
   <x-input  :disabled="!edit" v-model="user.address_detail"></x-input>
      </group>
@@ -74,6 +77,21 @@
       CellFormPreview, Group, Cell,Tabbar, TabbarItem,XInput,XAddress,XTextarea,VueCoreImageUpload
     },
     methods:{
+      bankchange(c){
+        var op="";
+      var tmp = c.replace(/\D/g, "");
+      for (var i=0;i<tmp.length;i++)
+      {
+          if (i%4===0 && i>0)
+          {
+              op = op + " " + tmp.charAt(i);
+          } else {
+              op = op + tmp.charAt(i);
+
+          }
+      }
+      this.user.bank = op;
+      },
       add_img(event){
      		 	  	  var reader =new FileReader();
      		 	  	   var img1=event.target.files[0];
@@ -132,7 +150,7 @@ imageUrl:'',
          headerImage:'',picValue:'',
         addressData: ChinaAddressV3Data,
         src: '',
-        user:{avatar:''},
+        user:{avatar:'',bank:'3232323232323232'},
       }
     }
   }

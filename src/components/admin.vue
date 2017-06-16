@@ -40,7 +40,7 @@
         </cell>
         <cell inline-desc="订单时间" :value="c.time_buy">
         </cell>
-        <cell :inline-desc="c.tracking_company" is-link :value="c.tracking">
+        <cell :inline-desc="c.tracking_company"  :value="c.tracking">
         </cell>
         <cell inline-desc="旺旺" is-link @click.native="toeditwang(c,item,list)">
           <img slot="icon" src="../svg/旺旺.svg" width="20" height="20" style="margin-right:10px" /></img>{{c.buyer_nick}}

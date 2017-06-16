@@ -8,7 +8,9 @@
         </a>
       <scroller lock-y :scrollbar-x=false class="scrollspy-iscroll" @on-scroll="onScroll" ref="scroller">
         <div class="box1" :style="{width:boxWidth + 'px'}">
-          <div class="box1-item" :class="{itemselected:tabs==index}" :style="{width:viewWidth + 'px'}" v-for="(item, index) in orderlist.num" :key="index" @click="onItemClick(item,index)"><span>{{item.item}} {{item.num}}</span></div>
+          <div class="box1-item" :class="{itemselected:tabs==index}" :style="{width:viewWidth + 'px'}" v-for="(item, index) in orderlist.num" :key="index" @click="onItemClick(item,index)">
+            <icon name="map-marker" class="mapicon" v-if="tabs == index"></icon>
+            <span>{{item.item}} {{item.num}}</span></div>
         </div>
       </scroller>
     </sticky>
@@ -285,6 +287,9 @@
 .box1-item.itemselected span {
   color: #FF905B;
 }
+.box1-item.itemselected .mapicon{
+  color:#FF905B
+}
 
 .tab {
   overflow: visible!important;
@@ -432,6 +437,7 @@ import {
   Swiper,
   SwiperItem
 } from 'vux'
+import 'vue-awesome/icons/map-marker'
 export default {
   components: {
     Group,
@@ -472,16 +478,13 @@ export default {
     loadMore() {
       this.loading = true;
       this.page++
+
+      setTimeout(() => {
         this.$http.post('http://sd.a10store.com/api/user.center.order.get.php', {
-          page: this.page
+          page: this.page,status:this.$store.state.vux.status
         }).then(res => {
           this.orderlist.list.push(res.body);
         }, res => {})
-      setTimeout(() => {
-        let last = this.orderlist.list[this.orderlist.list.length - 1];
-        for (let i = 1; i <= 10; i++) {
-          this.orderlist.list.push(last);
-        }
         console.log(this.page);
         console.log(this.orderlist);
         this.loading = false;
@@ -661,6 +664,9 @@ export default {
   },
   watch: {
     status(curVal, oldVal) {　　　　　　　　　　
+      console.log('status'+curVal, oldVal);　　　　　　　　
+    },
+    tabs(curVal, oldVal) {　　　　　　　　　　
       console.log(curVal, oldVal);　　　　　　　　
     },
   },

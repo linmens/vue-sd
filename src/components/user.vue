@@ -132,6 +132,7 @@ export default {
     },
     topage(item){
       this.$router.push('order')
+      console.log(item.index);
       this.$store.state.vux.tabs = item.index
       this.$store.state.vux.status = item.name
       // this.$store.commit('increment',item)

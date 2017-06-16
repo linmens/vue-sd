@@ -10,12 +10,21 @@
     <cell title="提现" is-link @click.native="tixian"></cell>
   </group>
   <div v-transfer-dom>
-     <popup position="right" v-model="showTixian" height="100%">
-       <div class="popup1">
+     <popup position="right" width="100%" v-model="showTixian" height="100%">
+       <div class="popup1 tixian">
            <x-header :left-options="{preventGoBack:true}" @on-click-back="showTixian= false">提现</x-header>
+           <group class="noMargin">
+             <div class="pop-header">
+               选择提现方式
+             </div>
+             <flexbox :gutter="0" class="flex-content" wrap="wrap">
+          <flexbox-item :span="1/3" v-for="(s,index) in inpayment" :key="index">
+            <div class="flex-demo" @click="changeTab(index)" :class="{active:actab == index}" >{{s}}</div></flexbox-item>
+        </flexbox>
+           </group>
          <group>
            <cell title="提现金额"></cell>
-           <x-input type="tel" ref="money" v-model="tixianPrice" title="￥"></x-input>
+           <x-input :disabled="actab=='-1'" type="tel" ref="money" v-model="tixianPrice" title="￥"></x-input>
            <cell inline-desc="可提现余额:950">
               <span style="color:red" v-if="tixianPrice>950" slot="inline-desc">金额已超过可提现金额</span>
            </cell>
@@ -38,12 +47,28 @@
         </div>
       </popup>
     </div>
-
+    <div v-transfer-dom>
+       <popup position="right" v-model="Addalipaypopup" width="100%" height="100%">
+         <div class="Addalipaypopup">
+             <x-header :left-options="{preventGoBack:true}" @on-click-back="Addalipaypopup= false">添加支付宝账号</x-header>
+             <group>
+               <x-input title="收款人">lichangxing</x-input>
+               <x-input title="支付宝账号">15088909294</x-input>
+             </group>
+             <div style="margin:10px" >
+               <x-button type="primary" @click.native="addAlipay()">添加</x-button>
+             </div>
+         </div>
+       </popup>
+     </div>
 </div>
 </template>
 <style>
 .popup1 .weui-label{
   font-size: 30px;
+}
+.tixian .flex-content {
+    background: rgb(238, 238, 238);
 }
 .popup1 .weui-cell__primary{
   font-size: 30px;
@@ -52,7 +77,7 @@
 <script>
 import {
   Cell,Msg,
-  Group,XSwitch,XInput,XHeader,XButton,
+  Group,XSwitch,XInput,XHeader,XButton,Flexbox, FlexboxItem,
   CellFormPreview,TransferDom,Popup
 } from 'vux'
 
@@ -62,7 +87,7 @@ export default {
     TransferDom
   },
   components: {
-    Cell,XSwitch,XInput,XHeader,XButton,Msg,
+    Cell,XSwitch,XInput,XHeader,XButton,Msg,Flexbox, FlexboxItem,
     CellFormPreview,TransferDom,Popup,
     Group,
   },
@@ -75,6 +100,20 @@ export default {
 
     this.showInfo = true
     this.icon = 'waiting'
+  },
+  changeTab(index){
+    this.actab = index
+    if(index==0){
+      //点击支付宝时发送api 到后台获取此用户 是否有支付宝绑定的信息 如果没有则弹出绑定账号信息～
+      var check = true
+      if(check){
+        this.Addalipaypopup = true
+      }else {
+
+      }
+    }else {
+
+    }
   },
   changeIcon () {
     this.showInfo = false
@@ -112,7 +151,10 @@ export default {
       showTixian:false,
       tixianPrice:'',
       showInfo:false,
+      Addalipaypopup:false,
       icon: '',
+      actab:-1,
+      inpayment:['支付宝','银行卡','微信'],
       buttons: [{
         type: 'primary',
         text: '完成',

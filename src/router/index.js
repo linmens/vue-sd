@@ -36,7 +36,7 @@ let routes = [{
     requireAuth: true,
     showback: true,
     showedit:false,
-    hiddentabbar:true
+    hiddentabbar:false
   },
 }, {
   path: '/user',
@@ -74,7 +74,7 @@ let routes = [{
   meta: {
     requireAuth: true,
     showedit:false,
-    hiddentabbar:false
+    hiddentabbar:true
   }
 }, {
   path: '/management',
