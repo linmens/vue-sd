@@ -27,8 +27,9 @@
         <cell :title="'收货人:' +c.address_name" :value="c.address_phone" :inline-desc="'收货地址:' + c.address_detail">
         </cell>
         <div class="weui-form-preview__ft">
+          <a @click="weihu(c)"   class="weui-form-preview__btn_default weui-form-preview__btn ">添加商品</a>
           <a @click="left(c)" :class="{'weui-form-preview__btn_primary':c.button_type=='true','weui-form-preview__btn_default':c.button_type=='false'}" style="border-right: 1px solid #D9D9D9;" class="weui-form-preview__btn ">{{c.button_text}}</a>
-
+<!-- v-if="tabs==1" -->
         </div>
       </group>
     </flexbox-item>
@@ -109,6 +110,24 @@
     </group>
 
   </x-dialog>
+  <x-dialog v-model="editGoods" class="dialog-demo" :dialog-style="{'width':'50%','max-width': '100%'}">
+    <group labelAlign="left">
+      <x-input title="货号" v-model="goods.huohao"></x-input>
+      <x-input title="颜色" v-model="goods.color"></x-input>
+      <!-- <x-input title="尺码" v-model="goods.size"></x-input> -->
+
+      <cell title="尺码">
+        <checker slot="value" v-model="goods.size" default-item-class="demo1-item" selected-item-class="demo1-item-selected">
+          <checker-item :value="item" v-for="(item, index) in items1" :key="index">{{item.value}}</checker-item>
+        </checker>
+      </cell>
+      <x-input title="数量" v-model="goods.num"></x-input>
+      <div class="weui-form-preview__ft">
+        <a @click="editGoods=false" class="weui-form-preview__btn weui-form-preview__btn_default">取消</a>
+        <a @click="finishgoods" class="weui-form-preview__btn weui-form-preview__btn_primary">完成</a></div>
+    </group>
+
+  </x-dialog>
 </div>
 </template>
 
@@ -117,7 +136,13 @@
   vertical-align: middle;
   float: right;
 }
-
+.demo1-item {
+  border: 1px solid #ececec;
+  padding: 5px 15px;
+}
+.demo1-item-selected {
+  border: 1px solid green;
+}
 .buyer img {
   vertical-align: middle;
 }
@@ -140,7 +165,7 @@ import {
   CellFormPreview,
   FlexboxItem,
   XHeader,
-  Tab,
+  Tab,Checker,CheckerItem,
   TabItem
 } from 'vux'
 import {
@@ -160,7 +185,7 @@ export default {
     Cell,
     Group,
     CellFormPreview,
-    Tab,
+    Tab,Checker,CheckerItem,
     TabItem,
   },
   computed: {
@@ -177,6 +202,27 @@ export default {
       show: false,
       search: '',
       editwang: false,
+      editGoods:false,
+      goods:{size:'',color:'',huohao:'',num:''},
+      items1: [{
+        key: '1',
+        value: 'M'
+      }, {
+        key: '2',
+        value: 'L'
+      }, {
+        key: '3',
+        value: 'XL'
+      }, {
+        key: '4',
+        value: '2XL'
+      }, {
+        key: '5',
+        value: '3XL'
+      }, {
+        key: '6',
+        value: '4XL'
+      }],
       edit: {
         wangwang: ''
       },
@@ -281,6 +327,26 @@ export default {
 
   },
   methods: {
+    finishgoods(){
+      console.log(this.goods);
+      this.$http.post('http://sd.a10store.com/api/admin.order.info.goods.update.php', {
+        weihu: this.goods
+      }).then(res => {
+        // this.editGoods = false
+        this.$vux.toast.show({
+          text: '添加成功,可继续添加!',
+          type: 'success',
+          position: 'middle'
+        })
+        this.getlist()
+      }, res => {
+      })
+    },
+    weihu(c){
+        console.log(c);
+        this.editGoods = true
+        this.goods.id= c.id
+    },
     onChange: debounce(function() {
       console.log(this.search);
       this.searchApi()

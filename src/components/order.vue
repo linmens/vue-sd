@@ -3,7 +3,7 @@
   <div style="height:44px;position: relative;">
     <sticky scroll-box="vux_view_box_body" class="mui-scrollspy" :offset="46" :check-sticky-support="false" :class="{open:isopen}">
       <div class="mui-scrollspy-text" v-if="isopen">切换</div>
-      <a href="javascript:;" class="mui-scrollspy-btn" :style="{'z-index':zIndex}" @click="toopenTab">  <img v-if="!isopen" width="22" height="44" src="../svg/up.svg"/>
+      <a ref="scrollspybtn" href="javascript:;" class="mui-scrollspy-btn" :style="{'z-index':zIndex}" @click="toopenTab">  <img v-if="!isopen" width="22" height="44" src="../svg/up.svg"/>
           <img v-if="isopen" width="22" height="44" src="../svg/down.svg"/>
         </a>
       <scroller lock-y :scrollbar-x=false class="scrollspy-iscroll" @on-scroll="onScroll" ref="scroller">
@@ -26,7 +26,7 @@
         <cell :inline-desc="'订单编号'" :value="c.orderid" v-if="tabs!=0">
         </cell>
         <cell v-for="(g,index) in c.list" :key="index" :value="g.value+'件'" :inline-desc="'颜色分类:'+ g.color + '尺码:'+g.size">
-          <img width="50" height="50" style="margin-right:15px" :src="g.src" slot="icon" @click="imgPreiviews(g.src)" />
+          <img class="previewer-demo-img" width="50" height="50" style="margin-right:15px" :src="g.src" slot="icon" @click="imgPreiviews(c.list,index)" />
           <div slot="title" v-clipboard:success="onCopy" v-clipboard:copy="g.label">{{g.label}} <img width="18" height="18" src="../svg/复制.svg" /></div>
         </cell>
         <cell :title="c.address_name">
@@ -62,17 +62,15 @@
       </div> -->
 
 
-
-
-  <x-dialog @on-show="rezIndex" @on-hide="hidezIndex" v-model="show" class="dialog-demo">
-    <group>
-      <x-input title="填入订单" v-model="forderid"></x-input>
-      <div class="weui-form-preview__ft">
-        <a @click="show=false" class="weui-form-preview__btn weui-form-preview__btn_default">取消</a>
-        <a @click="finishorder()" class="weui-form-preview__btn weui-form-preview__btn_primary">完成</a></div>
-    </group>
-  </x-dialog>
-  <x-dialog @on-hide="hidezIndex" @on-show="rezIndex" v-model="showScrollBox" :dialog-style="{'max-width': '90%', width: '90%','text-align': 'left'}" class="dialog-tracking">
+      <x-dialog v-model="show" >
+                <group>
+                  <x-input title="填入订单" v-model="forderid"></x-input>
+                  <div class="weui-form-preview__ft">
+                    <a @click="show=false" class="weui-form-preview__btn weui-form-preview__btn_default">取消</a>
+                    <a @click="finishorder()" class="weui-form-preview__btn weui-form-preview__btn_primary">完成</a></div>
+                </group>
+            </x-dialog>
+  <x-dialog  v-model="showScrollBox" :dialog-style="{'max-width': '90%', width: '90%','text-align': 'left'}" class="dialog-tracking">
     <div class="dialog-title">
       <p style="text-align:center;padding: 10px;">
         <span v-if="tracking_info.ischeck==0">卖家已发货</span>
@@ -98,7 +96,7 @@
       <span class="vux-close"></span>
     </div>
   </x-dialog>
-  <x-dialog @on-show="rezIndex" @on-hide="hidezIndex" v-model="imgPreiview" class="dialog-demo">
+  <x-dialog v-model="imgPreiview" class="dialog-demo">
     <div class="thin-scroll" style="overflow-y:scroll;overflow-x:hidden;-webkit-overflow-scrolling:touch;">
       <img :src="imgView" class="ximg-demo"></x-img>
     </div>
@@ -106,9 +104,13 @@
       <span class="vux-close"></span>
     </div>
   </x-dialog>
+  <previewer :list="imglist" ref="previewer" :options="options" @on-close="oncloseImg"></previewer>
 </div>
 </template>
 <style>
+.none{
+  display: none;
+}
 .group {
   margin-top: 44px
 }
@@ -253,7 +255,7 @@
 
 .scrollspy-iscroll {
   position: relative;
-  z-index: 1000;
+  z-index: 501;
   height: 44px;
   -webkit-box-shadow: 0 2px 6px 0 rgba(0, 0, 0, .2);
   box-shadow: 0 2px 6px 0 rgba(0, 0, 0, .2);
@@ -415,9 +417,9 @@
 // require("vue2-scrollbar/style/vue2-scrollbar.css")
 import {
   Group,
-  FormPreview,
+  FormPreview,Popup,
   XHeader,
-  Popover,
+  Popover,Previewer,
   Timeline,
   Checklist,
   TimelineItem,
@@ -440,9 +442,9 @@ import {
 import 'vue-awesome/icons/map-marker'
 export default {
   components: {
-    Group,
+    Group,Popup,
     Spinner,
-    XHeader,
+    XHeader,Previewer,
     Scroller,
     Popover,
     Divider,
@@ -463,14 +465,9 @@ export default {
     CellFormPreview,
     XButton,
   },
+
   methods: {
-    rezIndex(val) {
-      console.log(val);
-      this.zIndex = 990
-    },
-    hidezIndex() {
-      this.zIndex = 10002
-    },
+
     loadTop() {
       this.getlist()
       this.$refs.loadmore.onTopLoaded();
@@ -483,15 +480,13 @@ export default {
         this.$http.post('http://sd.a10store.com/api/user.center.order.get.php', {
           page: this.page,status:this.$store.state.vux.status
         }).then(res => {
-          this.orderlist.list.push(res.body);
+          console.log('nomore');
+          // this.orderlist.list.push(res.body);
         }, res => {})
-        console.log(this.page);
-        console.log(this.orderlist);
         this.loading = false;
       }, 2500);
     },
     handleTopChange(status) {
-      console.log(status);
       this.topStatus = status;
     },
     handleBottomChange(status) {
@@ -563,12 +558,28 @@ export default {
         this.$vux.loading.hide()
       })
     },
-    imgPreiviews(index) {
-      console.log(this.imgView);
-      let reimg = index.replace(/_50x50.jpg/, "")
-      this.imgPreiview = true
-      this.imgView = reimg
+    imgPreiviews(g,index) {
+      var img = new Image();
+      console.log(g);
+        // let reimg = g[index].src.replace(/_50x50.jpg/, "")
+        this.imgviewIsshow = false
+      for (var i = 0; i < g.length; i++) {
+        var srcs = g[i].src
+        let reimg = srcs.replace(/_50x50.jpg/, "")
+        // img.src =reimg;
+        // var imgWidth = img.width; //图片实际宽度
+        // var imgHeight = img.height
+        this.imglist.push({src:reimg,w:800,h:800})
+      }
+      console.log(this.imglist);
+       this.$refs.previewer.show(index)
+      // this.imgPreiview = true
+      // this.imgView = reimg
       // this.$refs.imgView.src
+    },
+    oncloseImg(){
+      this.imglist = []
+      this.imgviewIsshow = false
     },
     findtracking(track) {
       this.showScrollBox = true
@@ -604,20 +615,20 @@ export default {
       })
     },
     tofinish(cid, item) {
-      var _this = this
+      const _this = this
+      // this.imgviewIsshow = true
+    // this.$refs.scrollspybtn.style.display = 'none'
+      // console.log();
       this.$store.state.vux.iid = item.id
       if (cid.class == 'default') {
         this.$vux.toast.text('不可操作~', 'middle')
-      } else {
-        if (cid.label == "输入订单号") {
-          this.show = true
-        } else {
-          this.zIndex = 990
+      }else {
+        if (cid.label != "输入订单号") {
           this.$vux.confirm.show({
             title: '是否' + cid.label + '?',
-            onCancel() {
-              _this.zIndex = 10002
-              console.log(_this.zIndex);
+            onCancel () {
+              // _this.$refs.scrollspybtn.style.display = 'block'
+              // _this.imgviewIsshow = true
             },
             onConfirm() {
               _this.$http.post('http://sd.a10store.com/api/user.center.order.state.update.php', {
@@ -626,12 +637,15 @@ export default {
                 id: item.id
               }).then(res => {
                 _this.$vux.toast.text('提交成功!', 'middle')
-                console.log(res);
+                _this.getlist();
               }, res => {})
             }
           })
+        } else{
+          this.show = true
         }
       }
+
 
     },
     finishorder() {
@@ -700,10 +714,27 @@ export default {
   data() {
     return {
       results: [],
+      imglist: [],
+      imgviewIsshow:true,
+      options: {
+          getThumbBoundsFn (index) {
+            // find thumbnail element
+            let thumbnail = document.querySelectorAll('.previewer-demo-img')[index]
+            // get window scroll Y
+            let pageYScroll = window.pageYOffset || document.documentElement.scrollTop
+            // optionally get horizontal scroll
+            // get position of element relative to viewport
+            let rect = thumbnail.getBoundingClientRect()
+            // w = width
+            return {x: rect.left, y: rect.top + pageYScroll, w: rect.width}
+            // Good guide on how to get element coordinates:
+            // http://javascript.info/tutorial/coordinates
+          }
+        },
       page: 1,
       sCrolleft: '',
       isopen: false,
-      zIndex: 10002,
+      zIndex: 502,
       resize: '',
       boxWidth: '',
       loading: false,

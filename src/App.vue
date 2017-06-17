@@ -7,6 +7,7 @@
       </span>
       <router-link slot="right" to="record"  v-if="$route.name=='余额'">交易记录</router-link>
       <span slot="right" v-if="$route.name=='交易记录'" @click="showStatus=true">筛选</span>
+      <icon slot="right" v-if="$route.name=='我'" name="commenting-o"></icon>
     </x-header>
     <router-view class="router-view"></router-view>
 
@@ -65,7 +66,7 @@ import {
   Loading
 } from 'vux'
 import { mapState } from 'vuex'
-
+import 'vue-awesome/icons/commenting-o'
 export default {
   components: {
     Cell,Sticky,Scroller,

@@ -6,12 +6,6 @@
     </cell>
   </group>
   <group>
-    <!-- <cell title="佣金" :value="user.money_yongjin">
-      <img slot="icon" width="30" style="display:block;margin-right:5px;" src="../svg/yongjin.svg" />
-    </cell> -->
-    <!-- <cell title="本金" :value="user.money_benjin">
-      <img slot="icon" width="30" style="display:block;margin-right:5px;" src="../svg/本金.svg" />
-    </cell> -->
     <cell title="余额" :value="user.money_yue" is-link link="yue">
       <img slot="icon" width="30" style="display:block;margin-right:5px;" src="../svg/余额.svg" />
     </cell>
@@ -43,7 +37,6 @@
   </group>
   <Group>
     <div class="weui-form-preview__ft"><a @click="logout" class="weui-form-preview__btn weui-form-preview__btn_primary">登出</a></div>
-    <!-- <x-button type="warn" class="logout" action-type="reset" @click.native="logout" style="border-radius: 0;">退出当前账号</x-button> -->
   </Group>
   <x-dialog v-model="showmodal" class="dialog-demo">
     <div class="img-box">
@@ -63,6 +56,8 @@
           <a @click="finish" class="weui-form-preview__btn weui-form-preview__btn_primary">完成</a></div>
       </group>
   </x-dialog>
+
+  <actionsheet v-model="show1"  show-cancel @on-click-menu-delete="onDelete"  :menus="menus1" @on-click-menu="click"></actionsheet>
 </div>
 </template>
 
@@ -110,14 +105,14 @@ import {
   XInput,
   XButton,
   cookie,
-  Flexbox, FlexboxItem,CellBox,
+  Flexbox, FlexboxItem,CellBox,Actionsheet,
   XDialog,Badge
 } from 'vux'
 export default {
   components: {
     Cell,
     XInput,
-    Group,Badge,Flexbox, FlexboxItem,CellBox ,
+    Group,Badge,Flexbox, FlexboxItem,CellBox ,Actionsheet,
     XHeader,
     XButton,
     XDialog
@@ -126,7 +121,6 @@ export default {
   methods: {
     toorder(){
       this.$router.push('order')
-
       this.$store.state.vux.tabs = 0
       this.$store.state.vux.status = '待下单'
     },
@@ -135,13 +129,11 @@ export default {
       console.log(item.index);
       this.$store.state.vux.tabs = item.index
       this.$store.state.vux.status = item.name
-      // this.$store.commit('increment',item)
     },
     finish(){
       if(this.newpass!=''&&this.oldpass!=''&&this.iconType=='success'){
         this.$http.post('http://sd.a10store.com/api/user.center.password.update.php', {newpass:this.newpass}).then(res => {
           console.log(res);
-
         }, res => {})
       }
     },
@@ -154,12 +146,14 @@ export default {
     show() {
       this.showmodal = true
     },
-    logout() {
-      console.log('logout');
+    onDelete () {
       cookie.remove('username')
       cookie.remove('id')
       cookie.remove('pass')
       this.$router.push('/login')
+    },
+    logout() {
+      this.show1 = true
     },
     onValuesChange(picker, values) {
       if (values[0] > values[1]) {
@@ -180,6 +174,11 @@ export default {
       newpass:'',
       oldpass:'',
       iconType: '',
+      show1: false,
+      menus1: {
+        'title.noop': '你确定要登出账号吗?',
+       delete: '<span style="color:red">登出</span>'
+      },
       showmodal: false,
       user: {
         orderNews:[{index:2,name:'待付款',badge:'99+',svg:'dfk.svg'},{index:3,name:'待发货',badge:'99+',svg:'dfh.svg'},
