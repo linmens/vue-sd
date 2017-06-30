@@ -11,7 +11,7 @@
     </x-header>
     <router-view class="router-view"></router-view>
 
-    <tabbar slot="bottom" v-if="$route.meta.hiddentabbar">
+    <tabbar slot="bottom" v-if="$route.meta.hiddentabbar&&$route.name!='admin'">
       <tabbar-item link="caigou" :badge="num">
           <img slot="icon" src="./svg/order.svg">
           <img slot="icon-active" src="./svg/orderactive.svg">
@@ -23,11 +23,16 @@
         <span slot="label">我的</span>
       </tabbar-item>
     </tabbar>
-    <tabbar slot="bottom" v-if="$route.name=='admin'">
+    <tabbar slot="bottom" v-if="$route.name=='admin'||$route.name=='sdadmin'">
       <tabbar-item link="admin" :badge="num">
           <img slot="icon" src="./svg/order.svg">
           <img slot="icon-active" src="./svg/orderactive.svg">
         <span slot="label">后台</span>
+      </tabbar-item>
+      <tabbar-item link="sdadmin">
+        <img slot="icon" src="./svg/补单.svg">
+        <img slot="icon-active" src="./svg/补单active.svg">
+        <span slot="label">补单</span>
       </tabbar-item>
       <tabbar-item link="management">
         <img slot="icon" src="./svg/my.svg">

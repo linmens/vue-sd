@@ -1,5 +1,6 @@
 <template>
 <div>
+  <search @on-submit="onSubmit" :auto-fixed="false"  @on-change="onChange" v-model="search" @on-focus="onFocus" @on-cancel="onCancel"></search>
   <div style="height:44px;position: relative;">
     <sticky scroll-box="vux_view_box_body" class="mui-scrollspy" :offset="46" :check-sticky-support="false" :class="{open:isopen}">
       <div class="mui-scrollspy-text" v-if="isopen">切换</div>
@@ -20,27 +21,31 @@
     <mt-loadmore :top-method="loadTop" @top-status-change="handleTopChange" ref="loadmore">
       <load-more v-if="!orderlist.list.length" :show-loading="false" tip="暂无数据" background-color="#fbf9fe"></load-more>
       <group v-else :title="'领取时间:'+ c.time+'  内部单号:  '+c.id" v-for="(c,index) in orderlist.list" :key="index">
-        <cell title="依布科尚精选">
+        <cell title="">
+          <span slot="title" v-if="status=='待下单'">请务必复制链接到淘宝搜索打开</span>
+          <icon slot="icon" v-if="status=='待下单'" name="info" style="margin-right:15px;color:red"></icon>
           <span slot="value" style="color:#FF905B">{{c.status}}</span>
         </cell>
         <cell :inline-desc="'订单编号'" :value="c.orderid" v-if="tabs!=0">
         </cell>
-        <cell v-for="(g,index) in c.list" :key="index" :value="g.value+'件'" :inline-desc="'颜色分类:'+ g.color + '尺码:'+g.size">
+        <cell v-for="(g,index) in c.list" :key="index"  :inline-desc="'颜色分类:'+ g.color + '尺码:'+g.size">
+          <span slot="value" ><span class="font-Big20">{{g.value}}</span> 件</span>
           <img class="previewer-demo-img" width="50" height="50" style="margin-right:15px" :src="g.src" slot="icon" @click="imgPreiviews(c.list,index)" />
           <div slot="title" v-clipboard:success="onCopy" v-clipboard:copy="g.label">{{g.label}} <img width="18" height="18" src="../svg/复制.svg" /></div>
         </cell>
-        <cell :title="c.address_name">
+        <cell>
+          <div slot="title" v-clipboard:success="onCopy" v-clipboard:copy="c.address_name">{{c.address_name}}<img width="18" height="18" src="../svg/复制.svg" /></div>
           <div slot="inline-desc" v-clipboard:success="onCopy" v-clipboard:copy="c.address_detail">收货地址: {{c.address_detail}}<img width="18" height="18" src="../svg/复制.svg" /></div>
-          <span slot="after-title">{{c.address_phone}}</span>
+          <span slot="after-title" v-clipboard:success="onCopy" v-clipboard:copy="c.address_phone">{{c.address_phone}}<img width="18" height="18" src="../svg/复制.svg" /></span>
         </cell>
         <cell>
           <div slot="value">
-            共{{c.list.length}}件商品 合计: ￥{{c.total}}
+            共<span class="font-Big20">{{c.list.length}}</span>件商品 合计: ￥{{c.total}}
           </div>
         </cell>
         <div class="weui-form-preview__ft">
           <a v-if="tabs==2" @click="findtracking(c)" class="weui-form-preview__btn weui-form-preview__btn_default">查看物流 </a>
-          <a v-if="tabs==0&&!edit" v-clipboard:success="onCopy" v-clipboard:copy="copyData" class="weui-form-preview__btn weui-form-preview__btn_default">复制链接</a>
+       <a v-if="tabs==0&&!edit" v-clipboard:success="onCopy" v-clipboard:copy="copyData" class="weui-form-preview__btn weui-form-preview__btn_default">复制入口链接</a>
           <a v-if="!edit" @click="tofinish(b,c)" v-for="(b,index) in c.button_text" :key="index" :class="{'weui-form-preview__btn_primary':b.class=='primary','weui-form-preview__btn_default':b.class=='default'}" class="weui-form-preview__btn">{{b.label}}</a>
           <a v-if="tabs==0|1|2&&edit" @click="togiveup(c)" class="weui-form-preview__btn weui-form-preview__btn_primary">放弃任务</a>
         </div>
@@ -104,10 +109,17 @@
       <span class="vux-close"></span>
     </div>
   </x-dialog>
+
+  <x-dialog v-model="showSteps" hide-on-blur :dialog-style="{'max-width': '100%', width: '100%', height: '50%', 'background-color': 'transparent'}">
+
+      </x-dialog>
   <previewer :list="imglist" ref="previewer" :options="options" @on-close="oncloseImg"></previewer>
 </div>
 </template>
 <style>
+.font-Big20{
+  font-size: 20px;color: #ff9360;
+}
 .none{
   display: none;
 }
@@ -440,6 +452,10 @@ import {
   SwiperItem
 } from 'vux'
 import 'vue-awesome/icons/map-marker'
+import 'vue-awesome/icons/info'
+import {
+  debounce
+} from 'vux'
 export default {
   components: {
     Group,Popup,
@@ -467,7 +483,32 @@ export default {
   },
 
   methods: {
-
+    searchApi() {
+      this.$vux.loading.show({
+        text: '搜索中...'
+      })
+      this.$http.post('http://sd.a10store.com/api/admin.order.list.search.php', {
+        serach: this.search
+      }).then(res => {
+        this.$vux.loading.hide()
+        this.orderlist = res.body;
+      }, res => {
+        this.$vux.loading.hide()
+      })
+    },
+    onSubmit (val) {
+          window.alert('on submit' + val)
+        },
+        onCancel () {
+          console.log('on cancel')
+        },
+        onFocus () {
+          console.log('on focus')
+        },
+        onChange: debounce(function() {
+          console.log(this.search);
+          this.searchApi()
+        }, 500),
     loadTop() {
       this.getlist()
       this.$refs.loadmore.onTopLoaded();
@@ -664,9 +705,14 @@ export default {
 
       this.isopen = false
       this.$store.state.vux.tabs = index
+      // this.$nextTick(() => {
+      //   this.$refs.scroller.reset({
+      //     left: this.viewWidth * this.$store.state.vux.tabs
+      //   });
+      // })
       this.$nextTick(() => {
         this.$refs.scroller.reset({
-          left: this.viewWidth * this.$store.state.vux.tabs
+          left: this.sCrolleft
         });
       })
       this.$store.state.vux.status = i.item
@@ -686,6 +732,9 @@ export default {
   },
   mounted() {
     console.log(this.$store.state.vux.status);
+    // if(this.$store.state.vux.status=='待下单'){
+    //   this.showSteps = true
+    // }
     this.wrapperHeight = document.documentElement.clientHeight - this.$refs.wrapper.getBoundingClientRect().top;
     let w = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth
     let h = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight
@@ -714,6 +763,7 @@ export default {
   data() {
     return {
       results: [],
+      showSteps:false,
       imglist: [],
       imgviewIsshow:true,
       options: {
@@ -750,6 +800,7 @@ export default {
       viewWidth: 0,
       checklist001: [],
       index: 2,
+      search:'',
       value: '',
       copyData: 'https://s.click.taobao.com/SjggJkw',
       show: false,

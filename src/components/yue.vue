@@ -12,7 +12,9 @@
   <div v-transfer-dom>
     <popup position="right" width="100%" v-model="showTixian" height="100%">
       <div class="popup1 tixian">
-        <x-header :left-options="{preventGoBack:true}" @on-click-back="showTixian= false">提现</x-header>
+        <x-header :left-options="{preventGoBack:true}" @on-click-back="showTixian= false">提现
+          <router-link to="txrecord" slot="right">提现记录</router-link>
+        </x-header>
         <group class="noMargin">
           <div class="pop-header">
             选择提现方式
@@ -39,7 +41,8 @@
   <div v-transfer-dom>
     <popup position="right" v-model="showInfo" width="100%" height="100%">
       <div class="popup2">
-        <x-header :left-options="{preventGoBack:true}" @on-click-back="showInfo= false">提现</x-header>
+        <x-header :left-options="{preventGoBack:true}" @on-click-back="showInfo= false">提现
+        </x-header>
         <msg title="提现申请已提交" :buttons="buttons" :icon="icon">
           <group slot="description">
             <cell-form-preview :list="info"></cell-form-preview>
@@ -113,6 +116,23 @@ export default {
     Group,
   },
   methods: {
+    getMoney(){
+      this.$vux.loading.show({
+        text: '加载中...'
+      })
+      this.$http.get('http://sd.a10store.com/api/user.center.money.info.get.php', {}).then(res => {
+        this.$vux.loading.hide()
+        this.personPrice = res.body;
+        this.enablePrice = this.personPrice.list[0].value
+      }, res => {
+        this.$vux.toast.show({
+          text: '加载数据失败!',
+          type: 'cancel',
+          position: 'middle'
+        })
+        this.$vux.loading.hide()
+      })
+    },
     setFocus(t) {
       console.log(t);
     },
@@ -123,7 +143,8 @@ export default {
       }).then(res => {
         this.$vux.toast.text('提交成功~', 'middle')
         this.showInfo = true
-        this.info = res.body
+        this.info = res.body.list
+        this.getMoney()
         // this.itemforButton = true
       }, res => {
 
@@ -167,6 +188,8 @@ export default {
     },
     changeIcon() {
       this.showInfo = false
+      this.getMoney()
+      this.tixianPrice = ''
     },
     tixian() {
       this.showTixian = true;
@@ -176,7 +199,6 @@ export default {
         this.tixianlist = res.body
       }, res => {})
 
-      this.enablePrice = this.personPrice.list[0].value
       // console.log(this.personPrice.list[0]);
       this.$nextTick(() => {
         that.$refs.money.$refs.input.focus()
@@ -186,21 +208,7 @@ export default {
     }
   },
   mounted() {
-    // console.log();
-    this.$vux.loading.show({
-      text: '加载中...'
-    })
-    this.$http.get('http://sd.a10store.com/api/user.center.money.info.get.php', {}).then(res => {
-      this.$vux.loading.hide()
-      this.personPrice = res.body;
-    }, res => {
-      this.$vux.toast.show({
-        text: '加载数据失败!',
-        type: 'cancel',
-        position: 'middle'
-      })
-      this.$vux.loading.hide()
-    })
+    this.getMoney()
   },
   data() {
     return {
@@ -226,7 +234,7 @@ export default {
         "info": "获取账号信息",
         "account": [{
           "label": "支付宝",
-          "value": 0
+          "value": 1
         }, {
           "label": "银行卡",
           "value": 0

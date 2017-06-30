@@ -1,144 +1,56 @@
 <template>
 <div>
-  <x-header style="width:100%;position:absolute;left:0;top:0;z-index:100;">后台<a slot="right"><i class="el-icon-plus" @click="Importorder = true"></i></a></x-header>
+  <x-header style="width:100%;position:absolute;left:0;top:0;z-index:100;">补单<a slot="right"><i class="el-icon-plus" @click="show = true"></i></a></x-header>
   <search @on-change="onChange" :auto-fixed="false" @on-submit="onSubmit" v-model="search" @on-focus="onFocus"></search>
   <tab v-model="tabs">
     <tab-item :selected="status === item" v-for="(item, index) in orderlist.num" :key="index" @on-item-click="onItemClick(item,index)">{{item.item}} {{item.num}}</tab-item>
   </tab>
+  <div v-for="(item,list) in orderlist.list" :key="list">
+    <group v-for="(c,orderindex) in item.orderneed" :key="orderindex" :title="'内部单号:  '+item.weborder + '      利润:  '+item.lirun">
+      <cell title="付款金额" :value="c.total">
+      </cell>
+      <cell inline-desc="订单编号" :value="c.orderid">
+      </cell>
+      <cell inline-desc="订单时间" :value="c.time_buy">
+      </cell>
+      <cell :inline-desc="c.tracking_company" is-link :value="c.tracking">
+      </cell>
+      <cell inline-desc="旺旺">
+        <img slot="icon" src="../../svg/旺旺.svg" width="20" height="20" style="margin-right:10px" /></img>{{c.buyer_nick}}
+      </cell>
+      <cell v-for="(g,index) in c.list" :key="index" :title="g.label" :value="g.value+'件'" :inline-desc="'颜色分类:'+ g.color + '尺码:'+g.size">
+        <img slot="icon" :src="g.src" width="50" height="50" style="margin-right:15px" />
+        <span slot="value" style="color:#F7BA2A">{{g.status}}</span>
+      </cell>
+      <cell :title="'收货人:' +c.address_name" :value="c.address_phone" :inline-desc="'收货地址:' + c.address_detail">
+      </cell>
+      <div class="weui-form-preview__ft">
+        <a @click="weihu(c)" class="weui-form-preview__btn_default weui-form-preview__btn ">添加商品</a>
+        <a @click="left(c)" :class="{'weui-form-preview__btn_primary':c.button_type=='true','weui-form-preview__btn_default':c.button_type=='false'}" style="border-right: 1px solid #D9D9D9;" class="weui-form-preview__btn ">{{c.button_text}}</a>
+        <!-- v-if="tabs==1" -->
+      </div>
+    </group>
+  </div>
+  <x-dialog v-model="show" class="dialog-demo" :dialog-style="{'max-width': '50%', width: '50%','text-align': 'left'}">
 
-  <flexbox wrap="wrap" :gutter="0" v-for="(item,list) in orderlist.list" :key="list" class="flexBefore">
-    <flexbox-item :span="1/2" v-for="(c,orderindex) in item.orderneed" :key="orderindex">
-      <group :title="'内部单号:  '+item.weborder + '      利润:  '+item.lirun">
-        <cell title="付款金额" :value="c.total">
-        </cell>
-        <cell inline-desc="订单编号" :value="c.orderid">
-        </cell>
-        <cell inline-desc="订单时间" :value="c.time_buy">
-        </cell>
-        <cell :inline-desc="c.tracking_company" is-link :value="c.tracking">
-        </cell>
-        <cell inline-desc="旺旺">
-          <img slot="icon" src="../svg/旺旺.svg" width="20" height="20" style="margin-right:10px" /></img>{{c.buyer_nick}}
-        </cell>
-        <cell v-for="(g,index) in c.list" :key="index" :title="g.label" :value="g.value+'件'" :inline-desc="'颜色分类:'+ g.color + '尺码:'+g.size">
-          <img slot="icon" :src="g.src" width="50" height="50" style="margin-right:15px" />
-          <span slot="value" style="color:#F7BA2A">{{g.status}}</span>
-        </cell>
-        <cell :title="'收货人:' +c.address_name" :value="c.address_phone" :inline-desc="'收货地址:' + c.address_detail">
-        </cell>
-        <div class="weui-form-preview__ft">
-          <a @click="weihu(c)" class="weui-form-preview__btn_default weui-form-preview__btn ">添加商品</a>
-          <a @click="left(c)" :class="{'weui-form-preview__btn_primary':c.button_type=='true','weui-form-preview__btn_default':c.button_type=='false'}" style="border-right: 1px solid #D9D9D9;" class="weui-form-preview__btn ">{{c.button_text}}</a>
-          <!-- v-if="tabs==1" -->
-        </div>
-      </group>
-    </flexbox-item>
-    <flexbox-item :span="1/2" v-for="(c,get) in item.orderGet" :key="get">
-      <group title="采购单">
-        <cell title="付款金额" :value="c.total">
-        </cell>
-        <cell inline-desc="订单编号" :value="c.orderid">
-        </cell>
-        <cell inline-desc="订单时间" :value="c.time_buy">
-        </cell>
-        <cell :inline-desc="c.tracking_company" :value="c.tracking">
-        </cell>
-        <cell inline-desc="旺旺" is-link @click.native="toeditwang(c,item,list)">
-          <img slot="icon" src="../svg/旺旺.svg" width="20" height="20" style="margin-right:10px" /></img>{{c.buyer_nick}}
-        </cell>
-        <cell v-for="(g,index) in c.list" :key="index" :title="g.label" :value="g.value+'件'" :inline-desc="'颜色分类:'+ g.color + '尺码:'+g.size">
-          <img slot="icon" :src="g.src" width="50" height="50" style="margin-right:15px" />
-          <span slot="value" style="color:#F7BA2A">{{g.status}}</span>
-        </cell>
-        <cell :title="'收货人:' +c.address_name" :value="c.address_phone" :inline-desc="'收货地址:' + c.address_detail">
-        </cell>
-        <div class="weui-form-preview__ft">
-          <a @click="right(c,item)" :class="{'weui-form-preview__btn_primary':c.button_type=='true','weui-form-preview__btn_default':c.button_type=='false'}" class="weui-form-preview__btn ">{{c.button_text}}</a>
-        </div>
-      </group>
-    </flexbox-item>
-  </flexbox>
-
-  <el-dialog :visible.sync="Importorder">
-    <div style="text-align: center;">
-      <el-radio-group v-model="importform.shop">
-        <el-radio-button label="依布工厂店"></el-radio-button>
-        <el-radio-button label="依布科尚精选"></el-radio-button>
-      </el-radio-group>
-    </div>
-    <el-form :model="importform" label-width="80px">
-      <el-form-item label="导入内容">
-        <el-radio-group v-model="importform.radio2">
-          <el-radio label="订单信息"></el-radio>
-          <el-radio label="商品信息"></el-radio>
-        </el-radio-group>
-      </el-form-item>
-      <el-form-item label="文件">
-        <el-upload class="upload-demo" ref="upload" :data="importform" action="http://sd.a10store.com/api/order.excel.update.php" :on-preview="handlePreview" :on-remove="handleRemove" :auto-upload="false">
-          <el-button slot="trigger" size="small" type="primary">选取文件</el-button>
-          <el-button style="margin-left: 10px;" size="small" type="success" @click="submitUpload">上传到服务器</el-button>
-          <div slot="tip" class="el-upload__tip">只能上传execl文件，且不超过2MB</div>
-        </el-upload>
-      </el-form-item>
-    </el-form>
-
-  </el-dialog>
-  <x-dialog v-model="show" class="dialog-demo" :dialog-style="{'max-width': '80%', width: '80%','text-align': 'left',height:'100%','overflow':'auto'}">
     <group>
-      <x-input title="原订单号" disabled v-model="fabu.orderid"></x-input>
+      <cell title="店铺">
+        <checker slot="default" v-model="demo6"  default-item-class="demo5-item" selected-item-class="demo5-item-selected">
+          <checker-item v-for="i in ['依布工厂店','依布服饰旗舰店']" :key="i" :value="i">{{i}}</checker-item>
+        </checker>
+      </cell>
       <x-input title="内部单号" disabled v-model="fabu.weborder"></x-input>
-      <x-table :content-bordered="false" :cell-bordered="false" style="background-color:#fff;margin-top:20px">
-        <thead>
-          <tr>
-            <!-- <th v-for="(th,index) in goodsApi.tableTh" :key="index" >{{th.name}}
-            </th> -->
-            <th>排序</th>
-            <th>主图</th>
-              <th>货号</th>
-            <th>尺码／颜色</th>
-            <th>吊牌价</th>
-            <th>进货价</th>
-            <th>件数</th>
-            <th>操作</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(g,index) in fabu.list" :key="index">
-            <td>{{index+1}}</td>
-            <td><img class="previewer-demo-img" width="50" height="50" style="padding:5px;vertical-align: middle;" :src="g.src" slot="icon" @click="showImg(g,index)" /></td>
-            <td>{{g.label}}</td>
-            <td style="line-height: 20px;">{{g.color}}<br>
-              <span style="color:#999999">{{g.size}}</span>
-            </td>
-            <td>{{g.price_gs}}</td>
-            <td>
-              <x-input v-model="g.price" text-align="center" :show-clear="false"></x-input>
-
-            </td>
-            <td>
-              <x-input v-model="g.value" text-align="center" :show-clear="false"></x-input>
-            </td>
-            <td>
-              <checker v-model="g.zhekou" @on-change="changePrice(g)" default-item-class="demo1-item" selected-item-class="demo1-item-selected">
-                <checker-item :value="item"  v-for="(item, index) in items2" :key="index">{{item}}</checker-item>
-              </checker>
-              <div>
-计算公式: 吊牌价 {{g.price_gs}} * {{g.zhekou}} * 1.1 + 10 = <span class="font-Big20">{{g.price}}</span>
-              </div>
-
-            </td>
-          </tr>
-
-        </tbody>
-      </x-table>
-      <cell text-align="right"  title="总计金额" class="font-Big20" :value="fabu.netotal"></cell>
-      <x-input text-align="right" disabled title="原总计金额" v-model="fabu.total"></x-input>
+      <cell :title="g.label" v-for="(g,index) in fabu.list" :key="index">
+        <img slot="icon" :src="g.src" width="50" height="50" style="margin-right:15px" />
+        <span slot="inline-desc">{{g.color}}   {{g.size}}   {{g.value}}件</span>
+        <x-input slot="value" v-model="g.price" text-align="right" :show-clear="false"><span slot="right">元</span></x-input>
+      </cell>
+      <x-input text-align="right" disabled title="总计金额" v-model="fabu.total"></x-input>
       <x-input text-align="right" title="佣金" v-model="fabu.yongjin"></x-input>
       <div class="weui-form-preview__ft">
         <a @click="show=false" class="weui-form-preview__btn weui-form-preview__btn_default">取消</a>
         <a @click="finish" class="weui-form-preview__btn weui-form-preview__btn_primary">发布</a></div>
     </group>
-
   </x-dialog>
   <x-dialog v-model="editwang" class="dialog-demo">
     <group>
@@ -180,9 +92,6 @@
 .demo1-item {
   border: 1px solid #ececec;
   padding: 5px 15px;
-  width: 50px;
-  height: 20px;
-  line-height: 20px;
 }
 
 .demo1-item-selected {
@@ -193,6 +102,23 @@
   vertical-align: middle;
 }
 
+.demo5-item-selected {
+  background: #ffffff url('../../svg/check.png') no-repeat right bottom;
+  border-color: #ff4a00!important;
+}
+
+.demo5-item {
+  width: 100px;
+  height: 26px;
+      padding: 5px;
+  line-height: 26px;
+  text-align: center;
+  border-radius: 3px;
+  border: 1px solid #ccc;
+  background-color: #fff;
+  margin-right: 6px;
+}
+
 .flexBefore .vux-flexbox-item .weui-cells .weui-cell {
   border-right: 1px solid #D9D9D9;
 }
@@ -200,7 +126,6 @@
 <script>
 import {
   XButton,
-  XTable,
   Search,
   XInput,
   XDialog,
@@ -223,7 +148,6 @@ import {
 export default {
   components: {
     XButton,
-    XTable,
     Search,
     Grid,
     GridItem,
@@ -254,7 +178,7 @@ export default {
       show: false,
       search: '',
       editwang: false,
-      fabuedit: false,
+      demo6: 1,
       editGoods: false,
       goods: {
         size: '',
@@ -281,27 +205,20 @@ export default {
         key: '6',
         value: '4XL'
       }],
-
       edit: {
         wangwang: ''
       },
-      items2: ['0.14','0.035','0.07'],
       fabu: {
         orderid: '',
         id: '',
         total: '',
-
-        netotal: '',
         yongjin: "",
         list: [{
-          fabuedit: false,
           label: '',
-          color: 'lvse',
-          size: 'xxl',
+          color: '',
+          size: '',
           num: '',
-          price: '',
-          value: '',
-          zhekou:''
+          price: ''
         }]
       },
       importform: {
@@ -320,53 +237,17 @@ export default {
             "status": "买家已付款，等待卖家发货",
             "tracking_company": "缺失",
             "tracking": "缺失",
-            netotal:'',
             "address_detail": "江苏省 苏州市 昆山市 开发区中园华园1588号常发香城名园13栋601室(215300)",
             "address_name": "王亦清",
             "address_phone": "13656267070",
             "total": "80.00",
             "yongjin": '',
             "time_buy": "2017-06-07 14:24",
-            "list": [{
-              label: '',
-              color: '用实际 x2xl',
-              size: 'xxl',
-              value: '1',
-              price: '',
-              price_gs: '190',
-              zhekou:'',
-            }, {
-              label: '',
-              color: '用实际 x2xl',
-              size: 'xxl',
-              num: '',
-              value: '2',
-              price_gs: '290',
-              price: '',
-              zhekou: '',
-            }]
-          }],
-          "orderGet": [{
-            "orderid": "缺失",
-            "buyer_nick": "缺失",
-            "status": "缺失",
-            "tracking_company_no": "",
-            "tracking_company": "缺失",
-            "tracking": "缺失",
-            "address_detail": "缺失",
-            "address_name": "缺失",
-            "address_phone": "缺失",
-            "total": "0.00",
-            "yongjin": 7,
-            "time_buy": "缺失",
             "list": []
           }]
         }],
         "info": "获取列表",
-        "num": [{
-          "item": "未发布",
-          "num": "1"
-        }, {
+        "num": [ {
           "item": "已发布",
           "num": "0"
         }, {
@@ -389,9 +270,6 @@ export default {
           "num": "0"
         }]
       },
-
-      index: 0,
-      Importorder: false,
     }
   },
   mounted() {
@@ -400,31 +278,6 @@ export default {
 
   },
   methods: {
-    countPrice() {
-
-    },
-    changePrice(g) {
-      console.log(g);
-      g.price = (g.price_gs * g.zhekou * 1.1 + 10).toFixed(2)
-      console.log(g.price);
-      let countNum = []
-      this.fabu.list.forEach(function(item) {
-        if(item.price != ''){
-          countNum.push(item.price)
-        }else {
-          return
-        }
-
-      });
-      console.log(countNum);
-      this.fabu.netotal = eval(countNum.join('+')).toFixed(2)
-
-      // this.countPrice()
-    },
-    tofabuEdit(g) {
-      console.log(g);
-      g.fabuedit = true
-    },
     finishgoods() {
       console.log(this.goods);
       this.$http.post('http://sd.a10store.com/api/admin.order.info.goods.update.php', {

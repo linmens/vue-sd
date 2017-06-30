@@ -26,21 +26,22 @@
 
          </div>
   <div slot="title" v-if="edit">
-      <x-input  placeholder="I'm placeholder" v-model="user.user_name"></x-input>
+      <x-input   v-model="user.user_name"></x-input>
   </div>
         <div slot="inline-desc" v-if="edit">
-            <x-input  placeholder="I'm placeholder" v-model="user.taobao_nick"></x-input>
+            <x-input   v-model="user.taobao_nick"></x-input>
         </div>
        </cell>
      </group>
      <group>
+        <x-input title="真实姓名"  :disabled="!edit"  v-model="user.trueName"></x-input>
        <x-input title="银行卡" :max="24" :disabled="!edit" @on-change="bankchange" v-model="user.bank"></x-input>
-       <x-input title="支付宝"  :disabled="!edit"  v-model="user.alipay"></x-input>
-       <x-input title="手机" :disabled="!edit"  text-align="right" placeholder="I'm placeholder" v-model="user.phone"></x-input>
-       <x-input  title="QQ" :disabled="!edit" text-align="right" placeholder="I'm placeholder" v-model="user.qq"></x-input>
-        <x-input  title="微信" :disabled="!edit" text-align="right" placeholder="I'm placeholder" v-model="user.wechat"></x-input>
+       <x-input title="支付宝"  :disabled="!edit"  v-model="user.zfb"></x-input>
+       <x-input  title="微信" :disabled="!edit" text-align="right"  v-model="user.wx"></x-input>
+       <x-input title="手机" :disabled="!edit"  text-align="right"  v-model="user.phone"></x-input>
+       <x-input  title="QQ" :disabled="!edit" text-align="right"  v-model="user.qq"></x-input>
   <x-address title="所在地区"  :disabled="!edit"  v-model="user.address" :list="addressData" placeholder="请选择地址" ></x-address>
-  <x-input  :disabled="!edit" v-model="user.address_detail"></x-input>
+  <!-- <x-input  :disabled="!edit" v-model="user.address_detail"></x-input> -->
      </group>
      <loading v-model="show1" ></loading>
   </div>

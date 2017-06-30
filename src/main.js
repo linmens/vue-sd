@@ -23,6 +23,7 @@ Vue.use(VueRouter)
 import { Loadmore,InfiniteScroll  } from 'mint-ui';
 Vue.use(InfiniteScroll)
 Vue.component(Loadmore.name, Loadmore);
+import 'vue-awesome/icons'
 import Icon from 'vue-awesome/components/Icon'
 Vue.component('icon', Icon)
 // 多级滚动
@@ -74,13 +75,18 @@ console.log(window.location.host);
     store.commit('isnOpadding')
     // store.commit('changeBacktext',from)
   }
+
+
   store.commit('updateLoadingStatus', {isLoading: true})
     let { auth = true } = meta
+    console.log(path);
     let isLogin = Boolean(cookie.get('username'))
-    if(window.location.host=='localhost:8080'){
+    let Access = Boolean(cookie.get('userAccess'))
+      console.log(Access);
+    if(window.location.host=='localhost:8081'){
       next()
     }else {
-      if (auth && !isLogin && path !== '/login') {
+      if (auth && !isLogin  && path !== '/login') {
           return next({ path: '/login' })
       }
       next()

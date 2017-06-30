@@ -8,7 +8,11 @@ import Order from '@/components/order.vue'
 import Admin from '@/components/admin.vue'
 import Yue from '@/components/yue.vue'
 import Record from '@/components/record.vue'
+import Txrecord from '@/components/txrecord.vue'
 import Management from '@/components/management.vue'
+import ShuadanAdmin from '@/components/shuadan/admin.vue'
+import Duizhang from '@/components/duizhang.vue'
+import DuizhangAdmin from '@/components/duizhangAdmin.vue'
 
 let routes = [{
   path: '/',
@@ -49,6 +53,16 @@ let routes = [{
   },
   component: User
 }, {
+  path: '/duizhang',
+  name: '对账',
+  meta: {
+    // 添加该字段，表示进入这个路由是需要登录的
+    showback: true,
+    showedit:false,
+    hiddentabbar:false
+  },
+  component: Duizhang
+}, {
   path: '/order',
   name: '订单',
   meta: {
@@ -77,9 +91,28 @@ let routes = [{
     hiddentabbar:true
   }
 }, {
+  path: '/sdadmin',
+  component: ShuadanAdmin,
+  name: 'sdadmin',
+  meta: {
+    requireAuth: true,
+    showedit:false,
+    hiddentabbar:true
+  }
+},{
   path: '/management',
   component: Management,
   name: '用户管理',
+  meta: {
+    requireAuth: true,
+    showedit:false,
+    showback:true,
+    hiddentabbar:false
+  }
+},{
+  path: '/duizhangAdmin',
+  component: DuizhangAdmin,
+  name: '对账',
   meta: {
     requireAuth: true,
     showedit:false,
@@ -100,6 +133,17 @@ let routes = [{
   path: '/record',
   component: Record,
   name: '交易记录',
+  meta: {
+    requireAuth: true,
+      showback: true,
+    showedit:false,
+    hiddentabbar:false
+  }
+},
+{
+  path: '/txrecord',
+  component: Txrecord,
+  name: '提现记录',
   meta: {
     requireAuth: true,
       showback: true,

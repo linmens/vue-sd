@@ -1,13 +1,13 @@
 
 <template>
-<div>
-  <group title="禁用内置验证及显示成功或者错误样式">
-    <x-input title="用户名" v-model="ruleForm2.account" placeholder="请输入用户名" novalidate :icon-type="iconType"   placeholder-align="right"></x-input>
-    <x-input title="密码" type="password" v-model="ruleForm2.pass" placeholder="请输入密码" novalidate :icon-type="iconType"   placeholder-align="right"></x-input>
-  </group>
-  <div style="padding:15px;">
-    <x-button @click.native="submitForm" :disabled="ruleForm2.account==''||ruleForm2.pass==''" type="primary">登录</x-button>
-  </div>
+<div style="height:100%">
+    <group >
+      <x-input  v-model="ruleForm2.account" placeholder="请输入用户名" novalidate :icon-type="iconType"   placeholder-align=""></x-input>
+      <x-input  type="password" v-model="ruleForm2.pass" placeholder="请输入密码" novalidate :icon-type="iconType"   placeholder-align=""></x-input>
+    </group>
+    <div style="padding:15px;">
+      <x-button @click.native="submitForm" :disabled="ruleForm2.account==''||ruleForm2.pass==''" type="primary">登录</x-button>
+    </div>
 </div>
 </template>
 
@@ -29,11 +29,16 @@ export default {
   data() {
     return {
       iconType: '',
+      boxHeight:'',
       ruleForm2: {
         pass: '',
         account: '',
       },
     };
+  },
+  mounted(){
+    let h = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight
+    this.boxHeight = h -46
   },
   methods: {
     submitForm() {

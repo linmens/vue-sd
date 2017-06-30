@@ -1,13 +1,36 @@
 <template>
 <div>
+
   <group>
     <cell :title="user.user_name" is-link link="person" :inline-desc="'淘宝昵称:'+user.taobao_nick">
       <img slot="icon" class="avatar" @click.stop="show()" width="80" height="80" style="display:block;margin-right:5px;" :src="user.avatar">
     </cell>
   </group>
+  <card :header="{title:'汇总'}" style="margin-bottom:10px">
+ <div slot="content" class="card-demo-flex card-demo-content01">
+   <div class="vux-1px-r">
+     <span>1130</span>
+     <br/>
+     历史可提现金额
+   </div>
+   <div class="vux-1px-r">
+     <span>15</span>
+     <br/>
+     已提现金额
+   </div>
+   <router-link tag="div" to="yue" class="vux-1px-r">
+     <span  >{{user.money_yue}}</span>
+     <br/>
+     剩余可提现金额
+   </router-link>
+ </div>
+</card>
   <group>
-    <cell title="余额" :value="user.money_yue" is-link link="yue">
+    <!-- <cell title="余额" :value="user.money_yue" is-link link="yue">
       <img slot="icon" width="30" style="display:block;margin-right:5px;" src="../svg/余额.svg" />
+    </cell> -->
+    <cell title="对账"  is-link link="duizhang">
+
     </cell>
   </group>
 
@@ -33,6 +56,8 @@
   </group>
   <group>
     <cell title="账号密码" is-link @click.native="setpass = true">
+    </cell>
+    <cell v-if="user.Access =='管理员'" title="后台" is-link link="admin">
     </cell>
   </group>
   <Group>
@@ -63,6 +88,23 @@
 
 <style lang="less" scoped>
 @import '~vux/src/styles/close';
+.card-demo-flex {
+  display: flex;
+}
+.card-demo-content01 {
+  padding: 10px 0;
+}
+.card-padding {
+  padding: 15px;
+}
+.card-demo-flex > div {
+  flex: 1;
+  text-align: center;
+  font-size: 12px;
+}
+.card-demo-flex span {
+  color: #f74c31;
+}
 .logout {
 
     border-radius: 0;
@@ -101,7 +143,7 @@ z-index: 101;
 import {
   Cell,
   Group,
-  XHeader,
+  XHeader,Card,
   XInput,
   XButton,
   cookie,
@@ -110,7 +152,7 @@ import {
 } from 'vux'
 export default {
   components: {
-    Cell,
+    Cell,Card,
     XInput,
     Group,Badge,Flexbox, FlexboxItem,CellBox ,Actionsheet,
     XHeader,
@@ -166,6 +208,7 @@ export default {
     this.$http.get('http://sd.a10store.com/api/user.center.info.get.php', {}).then(res => {
       console.log(res);
       this.user = res.body;
+      cookie.set('userAccess', this.user.Access)
     }, res => {})
   },
   data() {
@@ -185,7 +228,8 @@ export default {
         {index:4,name:'待收货',badge:'99+',svg:'dsh.svg'},{index:5,name:'退款/售后',badge:'99+',svg:'tksh.svg'}],
         "money_yongjin": "",
         "money_benjin": "",
-        "money_yue": "",
+        "money_yue": "2323",
+        Access:'管理员',
         "user_name": "",
         "user_level": "",
         avatar: '',
