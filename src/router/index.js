@@ -7,12 +7,13 @@ import Person from '@/components/person.vue'
 import Order from '@/components/order.vue'
 import Admin from '@/components/admin.vue'
 import Yue from '@/components/yue.vue'
-import Record from '@/components/record.vue'
 import Txrecord from '@/components/txrecord.vue'
 import Management from '@/components/management.vue'
 import ShuadanAdmin from '@/components/shuadan/admin.vue'
 import Duizhang from '@/components/duizhang.vue'
 import DuizhangAdmin from '@/components/duizhangAdmin.vue'
+import Reconciliation from '@/components/acountDui.vue'
+import Workspace from '@/components/workspace.vue'
 
 let routes = [{
   path: '/',
@@ -21,17 +22,27 @@ let routes = [{
     // 添加该字段，表示进入这个路由是需要登录的
     showback: true,
   },
-   redirect: { name: '领单中心' }
+   redirect: { name: '采购' }
  },{
   path: '/caigou',
-  name: '领单中心',
+  name: '采购',
   meta: {
     // 添加该字段，表示进入这个路由是需要登录的
     showback: true,
     showedit:false,
-    hiddentabbar:true
+    hiddentabbar:'customer'
   },
   component: Caigou},
+  {
+   path: '/workspace',
+   name: '工作台',
+   meta: {
+     // 添加该字段，表示进入这个路由是需要登录的
+     showback: true,
+     showedit:false,
+     hiddentabbar:'admin'
+   },
+   component: Workspace},
 {
   path: '/person',
   component: Person,
@@ -49,7 +60,8 @@ let routes = [{
     // 添加该字段，表示进入这个路由是需要登录的
     showback: true,
     showedit:false,
-    hiddentabbar:true
+    showheader:true,
+    hiddentabbar:'customer'
   },
   component: User
 }, {
@@ -59,9 +71,22 @@ let routes = [{
     // 添加该字段，表示进入这个路由是需要登录的
     showback: true,
     showedit:false,
+    showheader:false,
     hiddentabbar:false
   },
   component: Duizhang
+},
+{
+  path: '/Reconciliation',
+  name: '商家对账',
+  meta: {
+    // 添加该字段，表示进入这个路由是需要登录的
+    showback: true,
+    showedit:false,
+    showheader:false,
+    hiddentabbar:false
+  },
+  component: Reconciliation
 }, {
   path: '/order',
   name: '订单',
@@ -69,7 +94,8 @@ let routes = [{
     // 添加该字段，表示进入这个路由是需要登录的
     showback: true,
     showedit:true,
-    hiddentabbar:false
+    hiddentabbar:false,
+    showheader:false,
   },
   component: Order
 },{
@@ -79,16 +105,18 @@ let routes = [{
   meta: {
     requireAuth: true,
     showedit:false,
+    showheader:true,
     hiddentabbar:false
   },
 }, {
-  path: '/admin',
+  path: '/adminorder',
   component: Admin,
-  name: 'admin',
+  name: '订单管理',
   meta: {
     requireAuth: true,
     showedit:false,
-    hiddentabbar:true
+    showheader:false,
+    hiddentabbar:false
   }
 }, {
   path: '/sdadmin',
@@ -97,7 +125,7 @@ let routes = [{
   meta: {
     requireAuth: true,
     showedit:false,
-    hiddentabbar:true
+    hiddentabbar:'admin'
   }
 },{
   path: '/management',
@@ -106,8 +134,9 @@ let routes = [{
   meta: {
     requireAuth: true,
     showedit:false,
+    showheader:true,
     showback:true,
-    hiddentabbar:false
+    hiddentabbar:'admin'
   }
 },{
   path: '/duizhangAdmin',
@@ -117,6 +146,7 @@ let routes = [{
     requireAuth: true,
     showedit:false,
     showback:true,
+    showheader:true,
     hiddentabbar:false
   }
 },{
@@ -126,16 +156,7 @@ let routes = [{
   meta: {
     requireAuth: true,
       showback: true,
-    showedit:false,
-    hiddentabbar:false
-  }
-}, {
-  path: '/record',
-  component: Record,
-  name: '交易记录',
-  meta: {
-    requireAuth: true,
-      showback: true,
+      showheader:true,
     showedit:false,
     hiddentabbar:false
   }

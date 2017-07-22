@@ -1,36 +1,24 @@
 <template>
-<div>
-
-  <group>
-    <cell :title="user.user_name" is-link link="person" :inline-desc="'淘宝昵称:'+user.taobao_nick">
-      <img slot="icon" class="avatar" @click.stop="show()" width="80" height="80" style="display:block;margin-right:5px;" :src="user.avatar">
+<div ref="user" :style="{height:wrapperHeight-53+'px'}">
+  <group :gutter="0">
+    <cell  :title="user.user_name" is-link link="person" :inline-desc="'淘宝昵称:'+user.taobao_nick">
+      <img slot="icon" class="avatar" @click.stop="show()" :src="user.avatar">
     </cell>
   </group>
-  <card :header="{title:'汇总'}" style="margin-bottom:10px">
- <div slot="content" class="card-demo-flex card-demo-content01">
-   <div class="vux-1px-r">
-     <span>1130</span>
-     <br/>
-     历史可提现金额
-   </div>
-   <div class="vux-1px-r">
-     <span>15</span>
-     <br/>
-     已提现金额
-   </div>
-   <router-link tag="div" to="yue" class="vux-1px-r">
-     <span  >{{user.money_yue}}</span>
-     <br/>
-     剩余可提现金额
-   </router-link>
- </div>
-</card>
+
   <group>
     <!-- <cell title="余额" :value="user.money_yue" is-link link="yue">
       <img slot="icon" width="30" style="display:block;margin-right:5px;" src="../svg/余额.svg" />
     </cell> -->
-    <cell title="对账"  is-link link="duizhang">
 
+    <cell v-if="user.Access =='商家'" title="商家对账"  is-link link="Reconciliation">
+
+    </cell>
+    <cell v-if="user.Access !='商家'" title="对账"  is-link link="duizhang">
+
+    </cell>
+    <cell title="余额"  is-link link="yue">
+      <span slot="value" style="color:#808080">{{user.yue}}  元</span>
     </cell>
   </group>
 
@@ -57,11 +45,11 @@
   <group>
     <cell title="账号密码" is-link @click.native="setpass = true">
     </cell>
-    <cell v-if="user.Access =='管理员'" title="后台" is-link link="admin">
+    <cell v-if="user.Access =='管理员'" title="后台" is-link link="adminorder">
     </cell>
   </group>
   <Group>
-    <div class="weui-form-preview__ft"><a @click="logout" class="weui-form-preview__btn weui-form-preview__btn_primary">登出</a></div>
+    <div  class="weui-cell vux-tap-active weui-cell_access"><a @click="logout" class="weui-form-preview__btn weui-form-preview__btn_primary">登出</a></div>
   </Group>
   <x-dialog v-model="showmodal" class="dialog-demo">
     <div class="img-box">
@@ -82,29 +70,19 @@
       </group>
   </x-dialog>
 
-  <actionsheet v-model="show1"  show-cancel @on-click-menu-delete="onDelete"  :menus="menus1" @on-click-menu="click"></actionsheet>
+  <actionsheet v-model="show1"  show-cancel @on-click-menu-delete="onDelete"  :menus="menus1" ></actionsheet>
 </div>
 </template>
 
 <style lang="less" scoped>
 @import '~vux/src/styles/close';
-.card-demo-flex {
-  display: flex;
+.avatar{
+  width: 80px;
+  height: 80px;
+  border-radius: 80px;
+  margin-right: 20px
 }
-.card-demo-content01 {
-  padding: 10px 0;
-}
-.card-padding {
-  padding: 15px;
-}
-.card-demo-flex > div {
-  flex: 1;
-  text-align: center;
-  font-size: 12px;
-}
-.card-demo-flex span {
-  color: #f74c31;
-}
+
 .logout {
 
     border-radius: 0;
@@ -164,7 +142,7 @@ export default {
     toorder(){
       this.$router.push('order')
       this.$store.state.vux.tabs = 0
-      this.$store.state.vux.status = '待下单'
+      this.$store.state.vux.status = '全部'
     },
     topage(item){
       this.$router.push('order')
@@ -205,9 +183,11 @@ export default {
   },
 
   mounted() {
+    this.wrapperHeight = document.documentElement.clientHeight - this.$refs.user.getBoundingClientRect().top;
     this.$http.get('http://sd.a10store.com/api/user.center.info.get.php', {}).then(res => {
       console.log(res);
       this.user = res.body;
+      this.$store.state.vux.yueNum = this.user.yue
       cookie.set('userAccess', this.user.Access)
     }, res => {})
   },
@@ -215,6 +195,7 @@ export default {
     return {
       setpass:false,
       newpass:'',
+      wrapperHeight:'',
       oldpass:'',
       iconType: '',
       show1: false,
@@ -224,15 +205,16 @@ export default {
       },
       showmodal: false,
       user: {
+        yue:'3000',
         orderNews:[{index:2,name:'待付款',badge:'99+',svg:'dfk.svg'},{index:3,name:'待发货',badge:'99+',svg:'dfh.svg'},
         {index:4,name:'待收货',badge:'99+',svg:'dsh.svg'},{index:5,name:'退款/售后',badge:'99+',svg:'tksh.svg'}],
         "money_yongjin": "",
         "money_benjin": "",
         "money_yue": "2323",
-        Access:'管理员',
+        Access:'商家',
         "user_name": "",
         "user_level": "",
-        avatar: '',
+        avatar: 'http://sd.a10store.com/img/avatar/avatar_2_1498876570.JPG',
         "taobao_nick": "",
         "phone": "",
         "address": "",

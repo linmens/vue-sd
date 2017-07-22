@@ -19,13 +19,21 @@ Vue.use(Vuex)
 import { cookie } from 'vux'
 Vue.use(ToastPlugin)
 Vue.use(VueResource)
+
 Vue.use(VueRouter)
-import { Loadmore,InfiniteScroll  } from 'mint-ui';
-Vue.use(InfiniteScroll)
-Vue.component(Loadmore.name, Loadmore);
 import 'vue-awesome/icons'
 import Icon from 'vue-awesome/components/Icon'
 Vue.component('icon', Icon)
+import KeyBoard from './wc-keyboard';
+Vue.use(KeyBoard);
+import { Loadmore} from 'mint-ui';
+Vue.component(Loadmore.name, Loadmore);
+import { InfiniteScroll } from 'mint-ui';
+Vue.use(InfiniteScroll);
+import  { AlertPlugin } from 'vux'
+Vue.use(AlertPlugin)
+Vue.use(require('vue-moment'));
+
 // 多级滚动
 const store = new Vuex.Store({}) // 这里你可能已经有其他 module
 
@@ -34,20 +42,18 @@ store.registerModule('vux', { // 名字自己定义
     isLoading: false,
     tabs:0,
     iid:'',
-    status:'待下单',
+    status:'全部',
     num:'',
-    edit:false,
+    yueNum:'90808',
     backText:'',
     topPading:'46px',
     bottomPading:'53px'
   },
   mutations: {
     updateLoadingStatus (state, payload) {
-      console.log(payload);
       state.isLoading = payload.isLoading
     },
     increment (state,item) {
-     console.log(item);
      state.tabs = item.index
      state.status = item.name
    },
@@ -79,7 +85,6 @@ console.log(window.location.host);
 
   store.commit('updateLoadingStatus', {isLoading: true})
     let { auth = true } = meta
-    console.log(path);
     let isLogin = Boolean(cookie.get('username'))
     let Access = Boolean(cookie.get('userAccess'))
       console.log(Access);

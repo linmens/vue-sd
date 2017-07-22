@@ -6,7 +6,7 @@
   <span slot="right" v-if="edit" @click="finish()">完成</span>
   <span slot="left" v-if="edit" @click="edit=false">取消</span>
     </x-header>
-    <group labelWidth="80">
+    <group  :gutter="0" labelAlign="right">
        <cell :title="user.user_name"  :inline-desc="'淘宝昵称:'+user.taobao_nick" >
          <img width="80" v-if="!edit"  slot="icon" height="80" class="avatar" style="display:block;margin-right:5px;" :src="user.avatar" />
          <div   slot="icon"  style="position: relative;" class="room_add_img">
@@ -33,14 +33,13 @@
         </div>
        </cell>
      </group>
-     <group>
-        <x-input title="真实姓名"  :disabled="!edit"  v-model="user.trueName"></x-input>
-       <x-input title="银行卡" :max="24" :disabled="!edit" @on-change="bankchange" v-model="user.bank"></x-input>
-       <x-input title="支付宝"  :disabled="!edit"  v-model="user.zfb"></x-input>
+     <group >
+        <x-input title="真实姓名"  :disabled="!edit" text-align="right" v-model="user.trueName"></x-input>
+       <x-input title="银行卡" :max="24" :disabled="!edit" text-align="right" @on-change="bankchange" v-model="user.bank"></x-input>
+       <x-input title="支付宝"  :disabled="!edit"  text-align="right" v-model="user.zfb"></x-input>
        <x-input  title="微信" :disabled="!edit" text-align="right"  v-model="user.wx"></x-input>
        <x-input title="手机" :disabled="!edit"  text-align="right"  v-model="user.phone"></x-input>
        <x-input  title="QQ" :disabled="!edit" text-align="right"  v-model="user.qq"></x-input>
-  <x-address title="所在地区"  :disabled="!edit"  v-model="user.address" :list="addressData" placeholder="请选择地址" ></x-address>
   <!-- <x-input  :disabled="!edit" v-model="user.address_detail"></x-input> -->
      </group>
      <loading v-model="show1" ></loading>

@@ -1,48 +1,37 @@
 <template>
 <div>
-  <div style="height:44px;">
     <sticky scroll-box="vux_view_box_body" :offset="46">
-      <div class="noMargin">
-        <group style="">
-          <cell :title="headtext" >
-            <img @click="showYear=true" slot="value" src="../svg/日期.svg" width="25" height="25" />
-          </cell>
-        </group>
-      </div>
+      <flexbox class="du-header">
 
+          <flexbox-item style="border-right: 1px dotted rgba(255, 255, 255, 0.33);"><div class="flex-demo">
+            <div class="labesppan">提现中(元)</div>
+            <div>{{record.intixian}}</div>
+          </div></flexbox-item>
+          <flexbox-item>  <div class="labesppan">已提现(元)</div>
+            <div>{{record.yitixian}}</div></flexbox-item>
+        </flexbox>
+      <button-tab v-model="demo01" style="padding: 10px;background:white;box-shadow: 0 4px 5px -3px hsl(0, 0%, 65%);">
+         <button-tab-item v-for="(t,index) in record.tabs" :key="index" @on-item-click="consoleIndex()">{{t}}</button-tab-item>
+       </button-tab>
     </sticky>
-  </div>
-  <popup v-model="showYear" position="bottom" class="noMargin">
-    <group>
-      <div class="vux-popup-picker-header">
-        <div class="vux-flexbox vux-flex-row">
-          <div class="vux-flexbox-item vux-popup-picker-header-menu vux-popup-picker-cancel" style="margin-left: 8px;" @click="showYear = false">取消</div>
-        </div>
-      </div>
-      <picker :data='years1' v-model='year4' @on-change='change'></picker>
-    </group>
-  </popup>
-  <div v-infinite-scroll="loadMore" infinite-scroll-disabled="loading" infinite-scroll-distance="35" class="page-loadmore-wrapper thin-scroll" ref="wrapper" :style="{ height: wrapperHeight + 'px' }">
-    <mt-loadmore :top-method="loadTop" @translate-change="translateChange" @top-status-change="handleTopChange" ref="loadmore">
-      <ul class="page-loadmore-list">
-        <group>
-          <cell :title="i.item"  v-for="i in record.list" >
-            <span slot="value">
-              <div style="font-size: 20px;">{{i.money}}</div>
-              <p style="color:#ccc">{{i.time_jd}}</p>
-            </span>
-            <img  slot="icon" :src="i.icon" width="35" height="35" style="margin-right:15px" />
-          </cell>
-        </group>
+  <group  title="红色为提现中">
+    <x-table :cell-bordered='false' >
+      <thead>
+        <tr>
+          <th  :key="index" v-for="(th,index) in record.thead">{{th.label}} </th>
+          <!-- :style="{width:viewWidth+'px'}" -->
 
-      </ul>
-      <div slot="top" class="mint-loadmore-top">
-        <span v-show="topStatus !== 'loading'&&topStatus !== 'pull'" :class="{ 'rotate': topStatus === 'drop' }">下拉刷新~</span>
-        <span v-show="topStatus === 'loading'" style="line-height: 30px;"><spinner type="ios-small"></spinner>加载中...</span>
-      </div>
-    </mt-loadmore>
-  </div>
-
+        </tr>
+      </thead>
+      <tbody>
+        <tr @click="toDetail(tr)" v-for="(tr,index) in record.list" :key="index">
+          <td>{{tr.time}}</td>
+          <td :class="{hastuikuan:tr.status=='有退款'}">{{tr.pay}}</td>
+          <td>{{tr.status}}</td>
+        </tr>
+      </tbody>
+    </x-table>
+  </group>
 </div>
 </template>
 <style>
@@ -58,20 +47,14 @@ import {
   Group,
   XInput,
   XHeader,
-  XButton,
+  XButton,XTable,
   CellFormPreview,
-  TransferDom,Spinner,
-  Popup,
+  TransferDom,Spinner,ButtonTab, ButtonTabItem,
+  Popup,Flexbox, FlexboxItem,
   Picker
 } from 'vux'
 
-let years = []
-for (var i = 2017; i <= 2018; i++) {
-  years.push({
-    name: i + '年',
-    value: i + ''
-  })
-}
+
 export default {
   directives: {
     TransferDom
@@ -79,8 +62,8 @@ export default {
   components: {
     Cell,
     XInput,
-    XHeader,
-    XButton,Spinner,
+    XHeader,XTable,
+    XButton,Spinner,ButtonTab, ButtonTabItem,Flexbox, FlexboxItem,
     Sticky,
     Scroller,
     Picker,
@@ -90,20 +73,16 @@ export default {
     Group,
   },
   methods: {
-    change(value) {
-      this.headtext = value[0]+'年' + (value[1])+'月'
-      this.loadList()
-    },
-    loadMore(){
 
-    },
+    consoleIndex () {
+        this.loadList()
+      },
     loadList() {
       this.$vux.loading.show({
         text: '加载中...'
       })
-      this.$http.post('http://sd.a10store.com/api/user.center.money.tixian.history.php', {info:this.headtext}).then(res => {
+      this.$http.post('http://sd.a10store.com/api/user.center.money.tixian.history.php', {tabs:this.record.tabs[this.demo01]}).then(res => {
         this.$vux.loading.hide()
-        this.showYear = false;
         this.record = res.body;
       }, res => {
         this.showYear = false;
@@ -114,71 +93,39 @@ export default {
         })
         this.$vux.loading.hide()
       })
-      //  setTimeout(() => {
-      //    let last = this.list[this.list.length - 1];
-      //    for (let i = 1; i <= 10; i++) {
-      //      this.list.push(last + i);
-      //    }
-      //    this.loading = false;
-      //  }, 2350);
+
     },
-    handleTopChange(status) {
-      this.moveTranslate = 1;
-      this.topStatus = status;
-    },
-    translateChange(translate) {
-      const translateNum = +translate;
-      this.translate = translateNum.toFixed(2);
-      this.moveTranslate = (1 + translateNum / 70).toFixed(2);
-    },
-    loadTop() {
-      console.log('lodtop');
-      setTimeout(() => {
-        this.loadList();
-        this.$refs.loadmore.onTopLoaded();
-      }, 1350);
-    }
   },
   mounted() {
-    var myDate = new Date();
-    // this.headtext = myDate.getFullYear()+'年'+ (myDate.getMonth()+1)+'月';
-    this.headtext = '近30天'
-    this.year4 = [myDate.getFullYear(),myDate.getMonth()+1]
-    this.wrapperHeight = document.documentElement.clientHeight - this.$refs.wrapper.getBoundingClientRect().top;
-
     this.loadList()
   },
   data() {
     return {
       list: [],
-      topStatus: '',
-      headtext:'',
-      wrapperHeight: 0,
-      showYear: false,
-      year4: [],
-      years1: [years, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]],
-      translate: 0,
-      moveTranslate: 0,
-      loading: false,
-      allLoaded: false,
+      demo01:0,
       record: {
+        tabs:['全部','提现中','已提现'],
+        intixian:'222',
+        thead:['提现时间','提现金额','提现状态'],
+        yitixian:'1',
         "list": [{
-          "item": "佣金",
-          "money": "13.29元",
-          icon:'佣金',
-        }, {
-          "item": "本金",
-          "money": "23.29元",
-          icon:'本金'
-        }, {
-          "item": "本金(冻结中)",
-          "money": "33.29元",
-          icon:'提现'
-        }, {
-          "item": "退款",
-          "money": "33.29元",
-          icon:'退款'
-        }],
+          "time": "佣金",
+          "pay": "13.29元",
+          status:'tixianzhong',
+
+        },{
+          "time": "佣金",
+          "pay": "13.29元",
+          status:'tixianzhong',
+        },{
+          "time": "佣金",
+          "pay": "13.29元",
+          status:'tixianzhong',
+        },{
+          "time": "佣金",
+          "pay": "13.29元",
+          status:'tixianzhong',
+        },],
         "yue": "55"
       },
       info: [{

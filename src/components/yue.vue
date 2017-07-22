@@ -1,11 +1,17 @@
 <template>
 <div>
-  <group>
-    <cell title="总余额账户(元)">
-      <span slot="value" class="weui-form-preview__btn_primary" style="font-size:24px">￥{{personPrice.yue}}</span>
-    </cell>
-    <cell-form-preview :list="personPrice.list"></cell-form-preview>
-  </group>
+  <x-header class="warn-header" title="余额" style="width:100%;position:absolute;left:0;top:0;z-index:100;">
+    <router-link to="user" tag="div">
+      <div slot="overwrite-left">
+        <a class="warn-header-back">返回</a>
+        <div class="warn-left-arrow"></div>
+      </div>
+    </router-link>
+  </x-header>
+  <div class="yueInfo">
+    <p>余额账户(元)</p>
+    <span class="yueNum">{{enablePrice||'2089898'}}</span>
+  </div>
   <group>
     <cell title="提现" is-link @click.native="tixian"></cell>
   </group>
@@ -25,15 +31,19 @@
             </flexbox-item>
           </flexbox>
         </group>
+
         <group>
           <cell title="提现金额"></cell>
-          <x-input :disabled="actab=='-1'" type="tel" ref="money" @on-change="priceOnchange" required v-model="tixianPrice" title="￥"></x-input>
+          <cell>
+            <wc-keyboard slot="child" :value="tixianPrice" inter="5" decimal="2" ref="money" @on-change="priceOnchange" />
+          </cell>
+          <!-- <x-input :disabled="actab=='-1'" type="number" ref="money" @on-change="priceOnchange" required v-model="tixianPrice" title="￥"></x-input> -->
           <cell :inline-desc="'可提现余额:'+enablePrice">
-            <span style="color:red" v-if="tixianPrice>enablePrice"  slot="inline-desc">金额已超过可提现金额</span>
+            <span style="color:red" v-if="Number(tixianPrice)>Number(enablePrice)" slot="inline-desc">金额已超过可提现金额</span>
           </cell>
         </group>
         <div style="margin:10px">
-          <x-button type="primary" @click.native="qTixian()" :disabled="myitem.value==0||tixianPrice==0||tixianPrice>enablePrice">确认提现</x-button>
+          <x-button type="warn" @click.native="qTixian()" :disabled="this.tixianPrice>this.enablePrice||this.tixianPrice==0||this.enablePrice==0">确认提现</x-button>
         </div>
       </div>
     </popup>
@@ -60,16 +70,69 @@
           <x-input :title="myitem.label+'账号'" v-model="addAlipay.account" required></x-input>
         </group>
         <div style="margin:10px">
-          <x-button type="primary"  @click.native="addAlipayaccount();Addalipaypopup= false">添加</x-button>
+          <x-button type="warn" @click.native="addAlipayaccount();Addalipaypopup= false">添加</x-button>
         </div>
       </div>
     </popup>
+    <!-- <vue-touch-keyboard v-if="visible", :layout="layout", :cancel="hide", :accept="accept", :input="input" /> -->
+
   </div>
 </div>
 </template>
 <style>
+.warn-header {
+  background-color: #d43c33
+  /*box-shadow: 0 4px 5px -3px hsla(0, 4%, 77%, 0.34);*/
+}
+
+.warn-header-back {
+  color: #fff;
+  padding-left: 16px;
+}
+
+.warn-left-arrow {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  top: -5px;
+  left: -5px;
+}
+
+.warn-left-arrow:before {
+  content: "";
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border: 1px solid #fff;
+  border-width: 1px 0 0 1px;
+  -webkit-transform: rotate(315deg);
+  transform: rotate(315deg);
+  top: 8px;
+  left: 7px;
+}
+
 .popup1 .weui-label {
   font-size: 30px;
+}
+
+.yueInfo {
+  height: 189px;
+  background: #d43c33
+}
+
+.yueInfo p {
+  padding-left: 20px;
+  padding-top: 20px;
+  color: rgba(247, 241, 241, 0.65);
+  font-weight: 100;
+}
+
+.yueNum {
+  font-size: 78px;
+  color: white;
+  padding-top: 0;
+  padding: 0px 0 20px 20px;
+  display: block;
 }
 
 .tixian .flex-content {
@@ -79,13 +142,37 @@
 .popup1 .weui-cell__primary {
   font-size: 30px;
 }
+
+.card-demo-flex {
+  display: flex;
+}
+
+.card-demo-content01 {
+  padding: 10px 0;
+}
+
+.card-padding {
+  padding: 15px;
+}
+
+.card-demo-flex>div {
+  flex: 1;
+  text-align: center;
+  font-size: 12px;
+}
+
+.card-demo-flex span {
+  color: #f74c31;
+}
 </style>
 <script>
+// Vue.use();
 import {
   Cell,
   Msg,
   Group,
   XSwitch,
+  Card,
   XInput,
   XHeader,
   XButton,
@@ -93,6 +180,7 @@ import {
   FlexboxItem,
   CellFormPreview,
   TransferDom,
+  numberComma,
   Popup
 } from 'vux'
 
@@ -104,6 +192,7 @@ export default {
   components: {
     Cell,
     XSwitch,
+    Card,
     XInput,
     XHeader,
     XButton,
@@ -115,15 +204,40 @@ export default {
     Popup,
     Group,
   },
+  computed: {
+    yueNum() {
+      return this.$store.state.vux.yueNum
+    },
+
+  },
   methods: {
-    getMoney(){
+    tixianAll() {
+    this.tixianPrice = this.enablePrice
+    },
+    accept(text) {
+      alert("Input text: " + text);
+      this.hide();
+    },
+
+    show(e) {
+      this.input = e.target;
+      this.layout = e.target.dataset.layout;
+
+      if (!this.visible)
+        this.visible = true
+    },
+
+    hide() {
+      this.visible = false;
+    },
+    getMoney() {
       this.$vux.loading.show({
         text: '加载中...'
       })
       this.$http.get('http://sd.a10store.com/api/user.center.money.info.get.php', {}).then(res => {
         this.$vux.loading.hide()
         this.personPrice = res.body;
-        this.enablePrice = this.personPrice.list[0].value
+        this.enablePrice = res.body.yue
       }, res => {
         this.$vux.toast.show({
           text: '加载数据失败!',
@@ -137,25 +251,33 @@ export default {
       console.log(t);
     },
     qTixian() {
-      this.icon = 'waiting'
-      this.$http.post('http://sd.a10store.com/api/user.center.money.tixian.php', {
-        price:this.tixianPrice,type:this.myitem.label
-      }).then(res => {
-        this.$vux.toast.text('提交成功~', 'middle')
-        this.showInfo = true
-        this.info = res.body.list
-        this.getMoney()
-        // this.itemforButton = true
-      }, res => {
+              if(this.tixianPrice!=''){
+                this.icon = 'waiting'
 
-      })
+                this.$http.post('http://sd.a10store.com/api/user.center.money.tixian.php', {
+                  price: this.tixianPrice,
+                  type: this.myitem.label
+                }).then(res => {
+                  this.tixianPrice = ''
+                  // this.$vux.toast.text('提交成功~', 'middle')
+                  this.showInfo = true
+                  this.info = res.body.list
+                  this.getMoney()
+                  // this.itemforButton = true
+                }, res => {
+
+                })
+              }
 
     },
-    priceOnchange(val){
+    priceOnchange(val) {
+      console.log(val);
+      this.tixianPrice = val
     },
-    addAlipayaccount(){
+    addAlipayaccount() {
       this.$http.post('http://sd.a10store.com/API/user.center.money.zfb.add.php', {
-        addalipay:this.addAlipay,type:this.myitem.label
+        addalipay: this.addAlipay,
+        type: this.myitem.label
       }).then(res => {
         this.tixian()
         this.$vux.toast.text('添加成功~', 'middle')
@@ -167,24 +289,25 @@ export default {
     },
     changeTab(item, index) {
       this.actab = index
+      console.log(item);
       this.myitem = item
       // this.info[1].label = item.label
       console.log(this.info);
-        if(item.value==0){
-          this.$vux.toast.text('您还没有绑定'+item.label+'账号~', 'middle')
-          this.Addalipaypopup = true
-          // this.itemforButton = false
-          this.$http.post('http://sd.a10store.com/api/user.center.info.account.zfb.get.php', {}).then(res => {
-            if (res.body.name == "缺失") {
-              this.$vux.toast.text('请完善真实姓名~', 'middle')
-              this.$router.push('person')
-            }else {
-              this.addAlipay.name = res.body.name
-            }
-          }, res => {
+      if (item.value == 0) {
+        this.$vux.toast.text('您还没有绑定' + item.label + '账号~', 'middle')
+        this.Addalipaypopup = true
+        // this.itemforButton = false
+        this.$http.post('http://sd.a10store.com/api/user.center.info.account.zfb.get.php', {}).then(res => {
+          if (res.body.name == "缺失") {
+            this.$vux.toast.text('请完善真实姓名~', 'middle')
+            this.$router.push('person')
+          } else {
+            this.addAlipay.name = numberComma(res.body.name)
+          }
+        }, res => {
 
-          })
-        }
+        })
+      }
     },
     changeIcon() {
       this.showInfo = false
@@ -200,24 +323,35 @@ export default {
       }, res => {})
 
       // console.log(this.personPrice.list[0]);
-      this.$nextTick(() => {
-        that.$refs.money.$refs.input.focus()
-      })
+      // this.$nextTick(() => {
+      //   that.$refs.money.$refs.input.focus()
+      // })
       // this.$refs.money.$refs.input.focus()
       // console.log(this.$refs.money.$refs);
     }
   },
   mounted() {
+    // this.enablePrice = numberComma(this.$store.state.vux.yueNum)
     this.getMoney()
   },
   data() {
     return {
-      enablePrice: '',
+      enablePrice: '30000.00',
       showTixian: false,
-      myitem:'',
+      visible: false,
+      layout: "normal",
+      input: null,
+      options: {
+        useKbEvents: false
+      },
+      myitem: {
+        value: 0,
+        label: ''
+      },
+      btndisabled:false,
       tixianPrice: '',
       showInfo: false,
-      itemforButton:false,
+      itemforButton: false,
       Addalipaypopup: false,
       icon: '',
       actab: -1,
@@ -227,8 +361,8 @@ export default {
         onClick: this.changeIcon.bind(this)
       }],
       addAlipay: {
-        name:'',
-        account:''
+        name: '',
+        account: ''
       },
       tixianlist: {
         "info": "获取账号信息",
