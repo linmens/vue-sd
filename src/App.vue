@@ -1,280 +1,222 @@
+<style>
+body{
+  margin:0!important;
+  padding: 0;
+  width: 100%;
+  background: rgb(238, 241, 246);
+  overflow: hidden;
+}
+.row-bg{
+  box-shadow: 0 -2px 3px -1px rgba(0,0,0,.22);
+padding: 10px;
+z-index: 99
+}
+.el-dialog__footer{
+  box-shadow: 0 -2px 3px -1px rgba(0,0,0,.22);
+  z-index: 99;
+  position: relative;
+}
+
+.el-dialog{
+  /*bottom: 50px*/
+}
+.gradBtn.el-button{
+  background: #E44D26;  /* fallback for old browsers */
+  color:white;
+  border-color: transparent;
+  background: -webkit-linear-gradient(to right, #F16529, #E44D26);  /* Chrome 10-25, Safari 5.1-6 */
+  background: linear-gradient(to right, #F16529, #E44D26); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+
+}
+.el-select .el-input{
+  width: auto!important
+}
+.gradBtn.el-button:focus,.gradBtn.el-button:hover{
+  opacity: 0.98;
+  border-color: transparent!important;
+  color: white!important
+}
+.header{
+  margin-bottom:20px;background:white;
+  height: 44px;
+  line-height: 44px;
+  text-align: center;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.15);
+}
+
+.el-menu-vertical-demo{
+  background: white!important
+}
+.el-dialog__body{
+  padding: 20px!important;
+      padding-bottom: 10px!important;
+      /*margin-bottom: -1px*/
+}
+.vertical-item{
+  background: white!important
+}
+.el-menu-header{
+  background: none!important
+}
+.el-menu-header .el-menu-item{
+  height: 100%!important;
+  line-height: 44px!important;
+}
+.el-table__body{
+  width: 100%!important
+}
+.clearfix:before,
+ .clearfix:after {
+     display: table;
+     content: "";
+ }
+
+.avatar{
+  width: 50px;
+    height: 50px;
+    border-radius: 50px;
+}
+.avatar-header{
+    background-size: cover !important;
+    background-repeat: no-repeat !important;
+    background-position: center !important;
+}
+.personal-avatar{
+  display: inline-block;
+position: relative;
+top: 8px;
+width: 28px;
+height: 28px;
+}
+.img-circle {
+    border-radius: 50%;
+}
+ .clearfix:after {
+     clear: both
+ }
+.el-table .cell{
+  white-space: nowrap!important;
+  word-break: normal!important;
+}
+.el-dialog__wrapper{
+  overflow: hidden!important
+}
+
+.el-dialog__wrapper::-webkit-scrollbar{
+  width: 5px;
+}
+.el-dialog__wrapper::-webkit-scrollbar-thumb{
+  background-color: #A6A6A6;
+  border-left: 2px solid transparent;
+}
+.el-table__body-wrapper::-webkit-scrollbar {
+  width: 5px;
+}
+.el-table__body-wrapper::-webkit-scrollbar-thumb {
+  background-color: #A6A6A6;
+  border-left: 2px solid transparent;
+}
+.el-table__body-wrapper::-webkit-scrollbar-track {
+  background-color: #E5E5E5;
+  border-left: 2px solid transparent;
+}
+.thin-scroll::-webkit-scrollbar {
+  width: 5px;
+}
+.thin-scroll::-webkit-scrollbar-thumb {
+  background-color: #A6A6A6;
+  border-left: 2px solid transparent;
+}
+
+.thin-scroll::-webkit-scrollbar-track {
+  background-color: #E5E5E5;
+  border-left: 2px solid transparent;
+}
+.per-block{
+  border-bottom: 1px solid #eef1f6;
+margin-bottom: 15px;
+}
+
+</style>
 <template>
-<div id="app" style="height:100%;">
-  <view-box ref="viewBox" :bodyPaddingTop="topPading" :bodyPaddingBottom="bottomPading">
-    <x-header :class="{isyueBlue:$route.name=='余额'}" v-if="$route.name!='个人信息'&&$route.name!='admin'&&$route.name!='订单'&&$route.name!='余额'" :title="$route.name" slot="header" :left-options="{backText:backText,showBack: $route.meta.showback}" style="width:100%;position:absolute;left:0;top:0;z-index:100;">
-      <!-- <span slot="right" @click="giveup"  v-if="tabs==0||tabs==1||tabs==2"><span v-if="!edit&&$route.meta.showedit">放弃订单</span> -->
-      <span v-if="edit&&$route.meta.showedit">取消</span>
-      </span>
-      <!-- <span slot="right" v-if="$route.name=='采购'" @click="torefresh"><icon name="refresh"></icon></span> -->
-      <router-link slot="right" to="txrecord"  v-if="$route.name=='对账'">提现记录</router-link>
-      <span slot="right" v-if="$route.name=='交易记录'" @click="showStatus=true">筛选</span>
-    </x-header>
-    <router-view class="router-view "></router-view>
+<div id="app" style="height:100%;    overflow: hidden;" >
+  <div>
+    <el-popover
+ref="popover1"
+placement="bottom"
+width="200px"
+trigger="click"
+>
+  <div class="per-block" v-for="acc in accountinfo">
+    <h3 style="margin-top:0">{{acc.title}}</h3>
+    <div class="">
+      <div v-for="list in acc.list">
+        <time class="time">{{list.label}}</time>
+        <el-progress  :percentage="list.value"></el-progress>
+      </div>
+      <el-button type="text" class="button">{{acc.btn}}</el-button>
+    </div>
+  </div>
+</el-popover>
+    <el-row :gutter="20" justify="end" type="flex" class="header" >
+    <el-col :span="21" >
+      <el-menu  :default-active="activepath" class="el-menu-header" mode="horizontal" @select="handleSelect">
+        <el-menu-item  index="/store"><router-link to="/shangpin/add" tag="div">便利店</router-link></el-menu-item>
+        <el-menu-item index="/taoke"><router-link to="/taoke/add" tag="div">淘宝客</router-link></el-menu-item>
+        <el-menu-item index="/caiwu"><router-link to="/caiwu/add" tag="div">财务</router-link></el-menu-item>
+      </el-menu>
+    </el-col>
+    <el-col :span="3" v-popover:popover1>
+      <img class="avatar-header img-circle personal-avatar" v-lazy="$cookie.get('avatar')"></img>
+      <span >{{$cookie.get('username')}}</span>
+    </el-col>
 
-    <tabbar  slot="bottom" v-if="$route.meta.hiddentabbar=='customer'">
-      <tabbar-item :selected="$route.name=='采购'"  link="caigou" :badge="num">
+  </el-row>
+      <router-view></router-view>
+  </div>
 
-        <icon name="list-alt" slot="icon" scale="1.4"></icon>
-        <icon name="list-alt" scale="1.4" slot="icon-active" style="color:#fff" ></icon>
-          <!-- <img slot="icon" src="./svg/order.svg"> -->
-          <!-- <img  src="./svg/orderactive.svg"> -->
-        <span slot="label">采购</span>
-      </tabbar-item>
-      <tabbar-item  link="user" :selected="$route.name=='我'">
-        <icon name="user-o" scale="1.4" slot="icon" ></icon>
-        <icon name="user-o" scale="1.4" slot="icon-active" style="color:#fff" ></icon>
-        <!-- <img slot="icon" src="./svg/my.svg"> -->
-        <!-- <img slot="icon-active" src="./svg/myactive.svg"> -->
-        <span slot="label">我</span>
-      </tabbar-item>
-    </tabbar>
-    <tabbar slot="bottom" v-if="$route.meta.hiddentabbar=='admin'">
-      <tabbar-item link="adminorder" :badge="num" :selected="$route.name=='工作台'">
-        <icon name="user-secret" scale="1.4" slot="icon" ></icon>
-        <icon name="user-secret" scale="1.4" slot="icon-active" style="color:#fff" ></icon>
-        <span slot="label">工作台</span>
-      </tabbar-item>
-      <!-- <tabbar-item link="sdadmin" :selected="$route.name=='补单'">
-        <img slot="icon" src="./svg/补单.svg">
-        <img slot="icon-active" src="./svg/补单active.svg">
-        <span slot="label">补单</span>
-      </tabbar-item> -->
-      <tabbar-item link="management" :selected="$route.name=='用户'">
-        <icon name="users" scale="1.4" slot="icon" ></icon>
-        <icon name="users" scale="1.4" slot="icon-active" style="color:#fff" ></icon>
-        <span slot="label">用户</span>
-      </tabbar-item>
-    </tabbar>
-    <popup v-model="showStatus" position="bottom" class="noMargin">
-      <group>
-        <div class="pop-header">
-          选择交易类型
-        </div>
-        <flexbox :gutter="0" class="flex-content" wrap="wrap">
-     <flexbox-item :span="1/3" v-for="(s,index) in statusforRecord" :key="index">
-       <div class="flex-demo" @click="changeTab(index)" :class="{active:actab == index}" >{{s.text}}</div></flexbox-item>
-   </flexbox>
-      </group>
-    </popup>
-  </view-box>
 
-  <loading v-model="isLoading"></loading>
 </div>
 </template>
 
 <script>
 
-import {
-  Cell,
-  Group,
-  XHeader,
-  Badge,
-  Tabbar,
-  TabbarItem,
-  ViewBox,Sticky,Scroller,  Tab,Flexbox, FlexboxItem,
-    TabItem,Popup,
-  Loading
-} from 'vux'
-import { mapState } from 'vuex'
+
 export default {
-  components: {
-    Cell,Sticky,Scroller,
-    Badge,
-    Group,
-    XHeader,  Tab,Popup,Flexbox, FlexboxItem,
-      TabItem,
-    Tabbar,
-    TabbarItem,
-    ViewBox,
-    Loading
-  },
-  computed: {
-    topPading(){
-      return this.$store.state.vux.topPading
-    },
-    tabs(){
-        return this.$store.state.vux.tabs
-    },
-    backText(){
-      return this.$store.state.vux.backText
-    },
-    edit() {
-      return this.$store.state.vux.edit
-    },
-    bottomPading(){
-        return this.$store.state.vux.bottomPading
-    },
-    num(){
-      return this.$store.state.vux.num
-    },
-    status(){
-      return this.$store.state.vux.status
-    },
-    isLoading(){
-      this.$store.state.vux.isLoading
-    }
-  },
   data(){
     return {
-      showStatus:false,
-      actab:0,
-      statusforRecord:[{text:'全部',id:0},{text:'退款',id:1},{text:'提现',id:2},{text:'佣金',id:3}]
+      activeIndex:'0',
+      indexpath:'',
+      // accountinfo:[
+      //   {title:'我的股份',btn:'入股记录',list:[
+      //     {value:'20',label:'项目1-淘宝客  2000元'},
+      //     {value:'10',label:'项目2-便利店  3000元'}
+      //     ]
+      //   },
+      //   {title:'正在融资项目',btn:'我要入股',list:[
+      //     {value:'20',label:'项目2-便利店 一期35000元'},
+      //     ]
+      //   }
+      // ]
     }
   },
+  computed: {
+    activepath() {
+      return this.$store.state.a10store.activepath
+    },
+    accountinfo() {
+      return this.$store.state.a10store.accountinfo
+    },
+  },
   methods:{
-    torefresh(){
-      this.$router.go(0)
-    },
-    changeTab(index){
-      this.actab = index
-    },
-
-
+    handleSelect(val){
+      // this.indexpath = val
+    }
   },
   mounted() {
+
+    this.$store.state.a10store.activepath = this.$route.matched["0"].path
+    console.log(this.$store.state.a10store.activepath,'App.vue');
   }
 }
 </script>
-
-
-<style lang="less">
-@import '~vux/src/styles/reset.less';
-.mui-scrollspy {
-  margin-top: 0;
-  position: relative;
-}
-.white-header{
-  box-shadow: 0 4px 5px -3px hsla(0, 4%, 77%, 0.34);
-}
-.white-header-back{
-color: rgb(80, 170, 255)!important;
-padding-left: 16px;
-}
-.white-left-arrow {
-   position: absolute;
-   width: 30px;
-   height: 30px;
-   top: -5px;
-   left: -5px;
-}
-.white-left-arrow:before{
-  content: "";
-position: absolute;
-width: 12px;
-height: 12px;
-border: 1px solid rgb(80, 170, 255);
-border-width: 1px 0 0 1px;
--webkit-transform: rotate(315deg);
-transform: rotate(315deg);
-top: 8px;
-left: 7px;
-}
-.isyueBlue{
-    background-color: #3da8f5!important;
-}
-.flex-content{
-  background: rgba(238, 241, 246, 0.51)
-}
-.hastuikuan{
-  color: red
-}
-.du-header  .vux-flexbox-item{
-  padding: 5px;
-  margin-bottom: 10px
-}
-.du-header{
-  background: rgb(212, 60, 51);
-color: white;
-font-weight: 300;
-}
-.du-header .labesppan{
-  color: rgba(255, 255, 255, 0.87);
-font-size: 14px;
-font-weight: 300;
-}
-.vux-button-group > a.vux-button-tab-item-first{
-  border-top-left-radius: 5px!important;
-border-bottom-left-radius: 5px!important;
-}
-.vux-button-group > a.vux-button-tab-item-last{
-  border-top-right-radius: 5px!important;
-border-bottom-right-radius: 5px!important;
-}
-.vux-button-group > a.vux-button-tab-item-last:after{
-  border-top-right-radius: 5px!important;
-border-bottom-right-radius: 5px!important;
-}
-.vux-button-group > a.vux-button-tab-item-first:after{
-  border-top-left-radius: 5px!important;
-border-bottom-left-radius: 5px!important;
-}
-// .bodyBg{
-//   background: rgba(229, 229, 229, 0.14);
-// height: 100%;
-// }
-#vux_view_box_body{
-  background: rgba(229, 229, 229, 0.39);
-}
-.noMargin .flex-demo{
-  margin: 10px;
-  height: 50px;
-  color: #554d4d;
-  text-align: center;
-line-height: 50px;
-border-radius: 5px;
-background: white
-}
-.noMargin .flex-demo.active{
-  background: #20b907;
-  color: white
-}
-.noMargin .flex-demo:hover{
-  background: #20b907;
-  color: white
-}
-.pop-header{
-  text-align: center;
-color: black;
-line-height: 44px;
-height: 44px;
-background: white;
-border-bottom: 1px solid rgba(213, 213, 214, 0.29)
-}
-.bottomEdit{
-height: 53px;
-line-height: 53px
-}
-.router-view {
-    width: 100%;
-    // top: 46px;
-        // overflow-x: auto;
-}
-.bottomEdit span{
-  position: absolute;
-right: 10px;
-    color: rgb(255, 144, 91);
-}
-// .weui-tab__panel{
-//   box-sizing: border-box;
-// top: 46px;
-// bottom: 53px;
-// position: absolute;
-// padding-bottom: 53px;
-//     height: 100%;
-// width: 100%;
-// overflow: auto;
-// -webkit-overflow-scrolling: touch;
-// }
-.weui-tabbar__icon>sup{
-  top: 0!important
-}
-body,
-html {
-    height: 100%;
-    width: 100%;
-    overflow: hidden;
-}
-body {
-    background-color: #fbf9fe;
-}
-</style>

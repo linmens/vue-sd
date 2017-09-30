@@ -1,108 +1,86 @@
 import Vue from 'vue'
-import FastClick from 'fastclick'
 import VueRouter from 'vue-router'
 import App from './App'
 import routes from './router/'
 import VueResource from 'vue-resource'
-import  { ToastPlugin } from 'vux'
 import VueClipboard from 'vue-clipboard2'
-import  { ConfirmPlugin } from 'vux'
-import  { LoadingPlugin } from 'vux'
-Vue.use(LoadingPlugin)
-Vue.use(ConfirmPlugin)
 Vue.use(VueClipboard)
 import ElementUI from 'element-ui'
-import 'element-ui/lib/theme-default/index.css'
-Vue.use(ElementUI)
+// import 'element-ui/lib/theme-default/index.css'
+import 'element-ui/lib/element-eb592f/index.css'
 import Vuex from 'vuex'
-Vue.use(Vuex)
-import { cookie } from 'vux'
-Vue.use(ToastPlugin)
-Vue.use(VueResource)
+import VueLazyLoad from 'vue-lazyload'
 
+//懒加载的默认图片
+import def_lazy_img from '../dist/timg.gif'
+import error_lazy_img from '../dist/error.png'
+//使用懒加载组件
+Vue.use(VueLazyLoad,{
+  loading: def_lazy_img,
+  error:error_lazy_img
+})
+// or with options
+// Vue.use(VueLazyload, {
+//   preLoad: 1.3,
+//   error: 'http://www.a10store.com/error.png',
+//   loading: 'http://www.a10store.com/timg.gif',
+//   attempt: 1
+// })
+Vue.use(Vuex)
+Vue.use(ElementUI)
+Vue.use(VueResource)
 Vue.use(VueRouter)
-import 'vue-awesome/icons'
-import Icon from 'vue-awesome/components/Icon'
-Vue.component('icon', Icon)
-import KeyBoard from './wc-keyboard';
-Vue.use(KeyBoard);
-import { Loadmore} from 'mint-ui';
-Vue.component(Loadmore.name, Loadmore);
-import { InfiniteScroll } from 'mint-ui';
-Vue.use(InfiniteScroll);
-import  { AlertPlugin } from 'vux'
-Vue.use(AlertPlugin)
-Vue.use(require('vue-moment'));
 
 // 多级滚动
-const store = new Vuex.Store({}) // 这里你可能已经有其他 module
-
-store.registerModule('vux', { // 名字自己定义
-  state: {
-    isLoading: false,
-    tabs:0,
-    iid:'',
-    status:'全部',
-    num:'',
-    yueNum:'90808',
-    backText:'',
-    topPading:'46px',
-    bottomPading:'53px'
-  },
-  mutations: {
-    updateLoadingStatus (state, payload) {
-      state.isLoading = payload.isLoading
-    },
-    increment (state,item) {
-     state.tabs = item.index
-     state.status = item.name
-   },
-   isNeedpadding(state,nestate){
-     state.bottomPading = '53px'
-   },
-   isnOpadding(state){
-     state.bottomPading = '0px'
-   },
-   changeBacktext(state,from){
-     state.backText = from.name
-   }
-  }
-})
+var VueCookie = require('vue-cookie');
+// Tell Vue to use the plugin
+Vue.use(VueCookie);
 const router = new VueRouter({
     routes
 })
+const store = new Vuex.Store({}) // 这里你可能已经有其他 module
+
+store.registerModule('a10store', { // 名字自己定义
+  state: {
+    activepath: '1',
+    accountinfo:'',
+    loading:false,
+  },
+  mutations: {
+    updateLoadingStatus (state, payload) {
+      console.log(payload);
+      state.isLoading = payload.isLoading
+    },
+  }
+})
 router.beforeEach(({meta, path}, from, next) => {
-console.log(window.location.host);
-  if(meta.hiddentabbar){
-    store.commit('isNeedpadding')
-
-  }
-  if(!meta.hiddentabbar){
-    store.commit('isnOpadding')
-    // store.commit('changeBacktext',from)
-  }
-
-
-  store.commit('updateLoadingStatus', {isLoading: true})
     let { auth = true } = meta
-    let isLogin = Boolean(cookie.get('username'))
-    let Access = Boolean(cookie.get('userAccess'))
-      console.log(Access);
+    store.state.a10store.loading = true
+    // console.log(VueResource);
+    let isLogin = Boolean(VueCookie.get('username'))
     if(window.location.host=='localhost:8081'){
       next()
     }else {
       if (auth && !isLogin  && path !== '/login') {
           return next({ path: '/login' })
       }
+      Vue.http.post('http://www.a10store.com/api/caiwu/get_gufen_zhanbi.php', {
+      }).then(res => {
+        console.log(res,'main.js');
+        store.state.a10store.accountinfo = res.body.list
+      }, res => {
+      })
       next()
     }
 
 })
 router.afterEach(function (to) {
-  store.commit('updateLoadingStatus', {isLoading: false})
+  setTimeout(function(){
+    store.state.a10store.loading = false
+  	// store.dispatch("onLoading",false);
+  	// console.log(store.state.isLoading)
+  },1000)
 })
-FastClick.attach(document.body)
-Vue.config.productionTip = false
 
 /* eslint-disable no-new */
 new Vue({

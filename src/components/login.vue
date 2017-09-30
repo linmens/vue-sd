@@ -1,35 +1,33 @@
 
 <template>
 <div style="height:100%">
-    <group >
-      <x-input  v-model="ruleForm2.account" placeholder="请输入用户名" novalidate :icon-type="iconType"   placeholder-align=""></x-input>
-      <x-input  type="password" v-model="ruleForm2.pass" placeholder="请输入密码" novalidate :icon-type="iconType"   placeholder-align=""></x-input>
-    </group>
-    <div style="padding:15px;">
-      <x-button @click.native="submitForm" :disabled="ruleForm2.account==''||ruleForm2.pass==''" type="primary">登录</x-button>
-    </div>
+  <el-form :model="ruleForm2"  class="login-pc" ref="ruleForm2" label-width="100px" >
+  <el-form-item label="">
+    <el-input v-model="ruleForm2.account" placeholder="请输入用户名"></el-input>
+  </el-form-item>
+  <el-form-item label="">
+      <el-input type="password" v-model="ruleForm2.pass" placeholder="请输入密码"></el-input>
+  </el-form-item>
+  <el-form-item label-width="100px">
+    <el-button type="success" @click="submitForm('ruleForm2')">登录</el-button>
+  </el-form-item>
+</el-form>
 </div>
 </template>
-
+<style>
+.login-pc{
+  padding: 10px;
+width: 35%;
+margin: 0 auto;
+}
+</style>
 <script>
-import {
-  XInput,
-  Group,
-  XButton,
-  cookie,
-  Cell
-} from 'vux'
+// import { cookie } from 'vux'
 export default {
-  components: {
-    XInput,
-    XButton,
-    Group,
-    Cell
-  },
+
   data() {
     return {
-      iconType: '',
-      boxHeight:'',
+
       ruleForm2: {
         pass: '',
         account: '',
@@ -37,28 +35,23 @@ export default {
     };
   },
   mounted(){
-    let h = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight
-    this.boxHeight = h -46
+    // let h = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight
+    // this.boxHeight = h -46
   },
   methods: {
     submitForm() {
-      this.$http.post('http://sd.a10store.com/api/login.php', {
+      console.log(this.$cookie);
+      this.$http.post('api/login.php', {
         form: this.ruleForm2
       }).then(res => {
-        if(res.body.data_info=='success'){
-          cookie.set('username', this.ruleForm2.account)
-          cookie.set('pass', this.ruleForm2.account)
-          cookie.set('id', res.body.id)
-          this.$router.push('/caigou')
+        if(res.body.mes=='登陆成功'){
+          this.$cookie.set('username', res.body.nick_name);
+          this.$cookie.set('avatar', res.body.avatar);
+          this.$cookie.set('id', res.body.account_id)
+          this.$router.push('/shangpin/weihu')
         }else {
-            this.$vux.toast.show({
-            type: 'cancel',
-            position: 'middle',
-            text: '登陆失败!'
-          })
         }
       }, res => {
-
       })
     }
   }
